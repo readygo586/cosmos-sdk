@@ -34,6 +34,12 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+* (x/ibc) [\#8624](https://github.com/cosmos/cosmos-sdk/pull/8624) Emit full header in IBC UpdateClient message.
+
 ## [v0.41.4](https://github.com/cosmos/cosmos-sdk/releases/tag/v0.41.3) - 2021-03-02
 
 **IMPORTANT**: Due to a bug in the v0.41.x series with how evidence handles validator consensus addresses #8461, SDK based chains that are not using the default bech32 prefix (cosmos, aka all chains except for the Cosmos Hub) should not use this release or any release in the v0.41.x series. Please see #8668 for tracking & timeline for the v0.42.0 release, which will include a fix for this issue.
