@@ -2,11 +2,9 @@ package types
 
 import (
 	"bytes"
-	"encoding/json"
 	fmt "fmt"
 	"sort"
 
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/exported"
 )
@@ -80,18 +78,4 @@ func SanitizeGenesisBalances(balances []Balance) []Balance {
 	return balances
 }
 
-// GenesisBalancesIterator implements genesis account iteration.
-type GenesisBalancesIterator struct{}
 
-// IterateGenesisBalances iterates over all the genesis balances found in
-// appGenesis and invokes a callback on each genesis account. If any call
-// returns true, iteration stops.
-func (GenesisBalancesIterator) IterateGenesisBalances(
-	cdc codec.JSONMarshaler, appState map[string]json.RawMessage, cb func(exported.GenesisBalance) (stop bool),
-) {
-	for _, balance := range GetGenesisStateFromAppState(cdc, appState).Balances {
-		if cb(balance) {
-			break
-		}
-	}
-}

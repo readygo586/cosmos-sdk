@@ -82,20 +82,133 @@ func (suite *IntegrationTestSuite) SetupTest() {
 	suite.queryClient = queryClient
 }
 
-func (suite *IntegrationTestSuite) TestSupply() {
+func (suite *IntegrationTestSuite) TestSupplys() {
 	app, ctx := suite.app, suite.ctx
 
 	initialPower := int64(100)
 	initTokens := sdk.TokensFromConsensusPower(initialPower)
 
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
-	app.BankKeeper.SetSupply(ctx, types.NewSupply(totalSupply))
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(totalSupply))
 
-	total := app.BankKeeper.GetSupply(ctx).GetTotal()
-	suite.Require().Equal(totalSupply, total)
+	total := app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(totalSupply, total.GetTotal())
 }
 
-func (suite *IntegrationTestSuite) TestSupply_SendCoins() {
+func (suite *IntegrationTestSuite) TestSupplys2() {
+	app, ctx := suite.app, suite.ctx
+	initialPower := int64(100)
+	initTokens := sdk.TokensFromConsensusPower(initialPower)
+	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(totalSupply))
+	total := app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(totalSupply, total.GetTotal())
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(sdk.NewCoins()))
+	total = app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(sdk.NewCoins(), total.GetTotal())
+	totalSupply = sdk.NewCoins(sdk.NewCoin("testtoken1", sdk.NewInt(2000000)))
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(totalSupply))
+	total = app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(totalSupply, total.GetTotal())
+}
+func (suite *IntegrationTestSuite) TestSupplys3() {
+	app, ctx := suite.app, suite.ctx
+	initialPower := int64(100)
+	initTokens := sdk.TokensFromConsensusPower(initialPower)
+	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(totalSupply))
+	total := app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(totalSupply, total.GetTotal())
+	totalSupply = totalSupply.Add(sdk.NewCoin("testtoken1", sdk.NewInt(20000000)), sdk.NewCoin("testtoken2", sdk.NewInt(20000000)))
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(totalSupply))
+	total = app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(totalSupply, total.GetTotal())
+}
+func (suite *IntegrationTestSuite) TestSupplys4() {
+	app, ctx := suite.app, suite.ctx
+	suite.Require().NotPanics(func() { app.BankKeeper.SetSupplys(ctx, types.NewSupplys(sdk.NewCoins())) })
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt()))))
+	total := app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt())), total.GetTotal())
+	total1 := app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom)
+	suite.Require().Equal(sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt()), total1.GetTotal())
+}
+func (suite *IntegrationTestSuite) TestSupply() {
+	app, ctx := suite.app, suite.ctx
+	initialPower := int64(100)
+	initTokens := sdk.TokensFromConsensusPower(initialPower)
+	totalSupply := sdk.NewCoin(sdk.DefaultBondDenom, initTokens)
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(totalSupply))
+	total := app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom)
+	suite.Require().Equal(totalSupply, total.GetTotal())
+	totalSupply1 := sdk.NewCoin("testtoken1", sdk.NewInt(10000000000))
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(totalSupply1))
+	total1 := app.BankKeeper.GetSupply(ctx, "testtoken1")
+	suite.Require().Equal(totalSupply1, total1.GetTotal())
+	totals := app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(sdk.NewCoins(total.GetTotal(), total1.GetTotal()), totals.GetTotal())
+}
+func (suite *IntegrationTestSuite) TestSupply2() {
+	app, ctx := suite.app, suite.ctx
+	initialPower := int64(100)
+	initTokens := sdk.TokensFromConsensusPower(initialPower)
+	totalSupply := sdk.NewCoin(sdk.DefaultBondDenom, initTokens)
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(totalSupply))
+	total := app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom)
+	suite.Require().Equal(totalSupply, total.GetTotal())
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt())))
+	total = app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom)
+	suite.Require().Equal(total.GetTotal(), sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt()))
+	totalSupply = sdk.NewCoin(sdk.DefaultBondDenom, initTokens)
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(totalSupply))
+	total = app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom)
+	suite.Require().Equal(totalSupply, total.GetTotal())
+}
+func (suite *IntegrationTestSuite) TestSupply3() {
+	app, ctx := suite.app, suite.ctx
+	initialPower := int64(100)
+	initTokens := sdk.TokensFromConsensusPower(initialPower)
+	totalSupply := sdk.NewCoin(sdk.DefaultBondDenom, initTokens)
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(totalSupply))
+	total := app.BankKeeper.GetSupply(ctx, "testtoken")
+	suite.Require().Equal(total.GetTotal(), sdk.NewCoin("testtoken", sdk.ZeroInt()))
+}
+func (suite *IntegrationTestSuite) TestSupply4() {
+	app, ctx := suite.app, suite.ctx
+	initialPower := int64(100)
+	initTokens := sdk.TokensFromConsensusPower(initialPower)
+	totalSupply := sdk.NewCoin(sdk.DefaultBondDenom, initTokens)
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(totalSupply))
+	app.BankKeeper.SetSupplys(ctx, types.NewSupplys(sdk.NewCoins()))
+	total := app.BankKeeper.GetSupplys(ctx)
+	suite.Require().Equal(total.GetTotal(), sdk.NewCoins())
+	total1 := app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom)
+	suite.Require().Equal(total1.GetTotal(), sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt()))
+	total2 := app.BankKeeper.GetSupply(ctx, "testtoken")
+	suite.Require().Equal(total2.GetTotal(), sdk.NewCoin("testtoken", sdk.ZeroInt()))
+}
+func (suite *IntegrationTestSuite) TestSupply5() {
+	app, ctx := suite.app, suite.ctx
+	suite.Require().Panics(func() { app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.Coin{})) })
+	suite.Require().Panics(func() {
+		app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(-1))))
+	})
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt())))
+	total := app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom)
+	suite.Require().Equal(sdk.NewCoin(sdk.DefaultBondDenom, sdk.ZeroInt()), total.GetTotal())
+}
+func (suite *IntegrationTestSuite) TestSupply_InflateDeflate() {
+	app, ctx := suite.app, suite.ctx
+	initialPower := int64(100)
+	initTokens := sdk.TokensFromConsensusPower(initialPower)
+	totalSupply := types.NewSupply(sdk.NewCoin(sdk.DefaultBondDenom, initTokens))
+	app.BankKeeper.SetSupply(ctx, totalSupply)
+	totalSupply.Inflate(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000)))
+	suite.Require().Equal(totalSupply.GetTotal().Amount, initTokens.Add(sdk.NewInt(1000)))
+	totalSupply.Deflate(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(900)))
+	suite.Require().Equal(totalSupply.GetTotal().Amount, initTokens.Add(sdk.NewInt(100)))
+}
+func (suite *IntegrationTestSuite) TestSupplys_SendCoins() {
 	app := simapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1})
 	appCodec := app.AppCodec()
@@ -120,7 +233,7 @@ func (suite *IntegrationTestSuite) TestSupply_SendCoins() {
 	baseAcc := authKeeper.NewAccountWithAddress(ctx, authtypes.NewModuleAddress("baseAcc"))
 	suite.Require().NoError(keeper.SetBalances(ctx, holderAcc.GetAddress(), initCoins))
 
-	keeper.SetSupply(ctx, types.NewSupply(initCoins))
+	keeper.SetSupplys(ctx, types.NewSupplys(initCoins))
 	authKeeper.SetModuleAccount(ctx, holderAcc)
 	authKeeper.SetModuleAccount(ctx, burnerAcc)
 	authKeeper.SetAccount(ctx, baseAcc)
@@ -158,7 +271,7 @@ func (suite *IntegrationTestSuite) TestSupply_SendCoins() {
 	suite.Require().Equal(initCoins, getCoinsByName(ctx, keeper, authKeeper, authtypes.Burner))
 }
 
-func (suite *IntegrationTestSuite) TestSupply_MintCoins() {
+func (suite *IntegrationTestSuite) TestSupplys_MintCoins() {
 	app := simapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1})
 	appCodec := app.AppCodec()
@@ -185,7 +298,7 @@ func (suite *IntegrationTestSuite) TestSupply_MintCoins() {
 	authKeeper.SetModuleAccount(ctx, multiPermAcc)
 	authKeeper.SetModuleAccount(ctx, randomPermAcc)
 
-	initialSupply := keeper.GetSupply(ctx)
+	initialSupply := keeper.GetSupplys(ctx)
 
 	suite.Require().Panics(func() { keeper.MintCoins(ctx, "", initCoins) }, "no module account")                // nolint:errcheck
 	suite.Require().Panics(func() { keeper.MintCoins(ctx, authtypes.Burner, initCoins) }, "invalid permission") // nolint:errcheck
@@ -199,20 +312,20 @@ func (suite *IntegrationTestSuite) TestSupply_MintCoins() {
 	suite.Require().NoError(err)
 
 	suite.Require().Equal(initCoins, getCoinsByName(ctx, keeper, authKeeper, authtypes.Minter))
-	suite.Require().Equal(initialSupply.GetTotal().Add(initCoins...), keeper.GetSupply(ctx).GetTotal())
+	suite.Require().Equal(initialSupply.GetTotal().Add(initCoins...), keeper.GetSupplys(ctx).GetTotal())
 
 	// test same functionality on module account with multiple permissions
-	initialSupply = keeper.GetSupply(ctx)
+	initialSupply = keeper.GetSupplys(ctx)
 
 	err = keeper.MintCoins(ctx, multiPermAcc.GetName(), initCoins)
 	suite.Require().NoError(err)
 
 	suite.Require().Equal(initCoins, getCoinsByName(ctx, keeper, authKeeper, multiPermAcc.GetName()))
-	suite.Require().Equal(initialSupply.GetTotal().Add(initCoins...), keeper.GetSupply(ctx).GetTotal())
+	suite.Require().Equal(initialSupply.GetTotal().Add(initCoins...), keeper.GetSupplys(ctx).GetTotal())
 	suite.Require().Panics(func() { keeper.MintCoins(ctx, authtypes.Burner, initCoins) }) // nolint:errcheck
 }
 
-func (suite *IntegrationTestSuite) TestSupply_BurnCoins() {
+func (suite *IntegrationTestSuite) TestSupplys_BurnCoins() {
 	app := simapp.Setup(false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1})
 	appCodec, _ := simapp.MakeCodecs()
@@ -235,12 +348,12 @@ func (suite *IntegrationTestSuite) TestSupply_BurnCoins() {
 	)
 
 	suite.Require().NoError(keeper.SetBalances(ctx, burnerAcc.GetAddress(), initCoins))
-	keeper.SetSupply(ctx, types.NewSupply(initCoins))
+	keeper.SetSupplys(ctx, types.NewSupplys(initCoins))
 	authKeeper.SetModuleAccount(ctx, burnerAcc)
 
-	initialSupply := keeper.GetSupply(ctx)
+	initialSupply := keeper.GetSupplys(ctx)
 	initialSupply.Inflate(initCoins)
-	keeper.SetSupply(ctx, initialSupply)
+	keeper.SetSupplys(ctx, initialSupply)
 
 	suite.Require().Panics(func() { keeper.BurnCoins(ctx, "", initCoins) }, "no module account")                        // nolint:errcheck
 	suite.Require().Panics(func() { keeper.BurnCoins(ctx, authtypes.Minter, initCoins) }, "invalid permission")         // nolint:errcheck
@@ -251,12 +364,12 @@ func (suite *IntegrationTestSuite) TestSupply_BurnCoins() {
 	err = keeper.BurnCoins(ctx, authtypes.Burner, initCoins)
 	suite.Require().NoError(err)
 	suite.Require().Equal(sdk.Coins(nil), getCoinsByName(ctx, keeper, authKeeper, authtypes.Burner))
-	suite.Require().Equal(initialSupply.GetTotal().Sub(initCoins), keeper.GetSupply(ctx).GetTotal())
+	suite.Require().Equal(initialSupply.GetTotal().Sub(initCoins), keeper.GetSupplys(ctx).GetTotal())
 
 	// test same functionality on module account with multiple permissions
-	initialSupply = keeper.GetSupply(ctx)
+	initialSupply = keeper.GetSupplys(ctx)
 	initialSupply.Inflate(initCoins)
-	keeper.SetSupply(ctx, initialSupply)
+	keeper.SetSupplys(ctx, initialSupply)
 
 	suite.Require().NoError(keeper.SetBalances(ctx, multiPermAcc.GetAddress(), initCoins))
 	authKeeper.SetModuleAccount(ctx, multiPermAcc)
@@ -264,7 +377,7 @@ func (suite *IntegrationTestSuite) TestSupply_BurnCoins() {
 	err = keeper.BurnCoins(ctx, multiPermAcc.GetName(), initCoins)
 	suite.Require().NoError(err)
 	suite.Require().Equal(sdk.Coins(nil), getCoinsByName(ctx, keeper, authKeeper, multiPermAcc.GetName()))
-	suite.Require().Equal(initialSupply.GetTotal().Sub(initCoins), keeper.GetSupply(ctx).GetTotal())
+	suite.Require().Equal(initialSupply.GetTotal().Sub(initCoins), keeper.GetSupplys(ctx).GetTotal())
 }
 
 func (suite *IntegrationTestSuite) TestSendCoinsNewAccount() {
@@ -459,6 +572,71 @@ func (suite *IntegrationTestSuite) TestBalance() {
 	suite.Require().Error(app.BankKeeper.SetBalance(ctx, addr, invalidBalance))
 }
 
+func (suite *IntegrationTestSuite) TestSetGetMetaData(){
+	app, ctx := suite.app, suite.ctx
+	enabled := true
+	orig := types.Metadata{
+		Description: "foocoin",
+		Base:        "foocoin",
+		Display:     "foocoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+	app.BankKeeper.SetDenomMetaData(ctx, orig)
+	got := app.BankKeeper.GetDenomMetaData(ctx, "foocoin")
+	suite.Require().Equal(orig,got)
+}
+
+
+
+func (suite *IntegrationTestSuite) TestGetAllDenomData() {
+	app, ctx := suite.app, suite.ctx
+	enabled := true
+	params := types.DefaultParams()
+	suite.Require().Equal(enabled, params.DefaultSendEnabled)
+
+	app.BankKeeper.SetParams(ctx, params)
+
+	metaBond := types.Metadata{
+		Description: sdk.DefaultBondDenom,
+		Base:        sdk.DefaultBondDenom,
+		Display:     sdk.DefaultBondDenom,
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+
+	metaFoo := types.Metadata{
+		Description: "foocoin",
+		Base:        "foocoin",
+		Display:     "foocoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+
+	metaBar := types.Metadata{
+		Description: "barcoin",
+		Base:        "barcoin",
+		Display:     "barcoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+
+
+	app.BankKeeper.SetDenomMetaData(ctx, metaBond)
+	app.BankKeeper.SetDenomMetaData(ctx, metaFoo)
+	app.BankKeeper.SetDenomMetaData(ctx, metaBar)
+
+	res:= app.BankKeeper.GetAllDenomMetaData(ctx)
+	suite.Require().Equal(3, len(res))
+	suite.Require().Equal(metaBar, res[0])
+	suite.Require().Equal(metaFoo, res[1])
+	suite.Require().Equal(metaBond, res[2])
+}
+
 func (suite *IntegrationTestSuite) TestSendEnabled() {
 	app, ctx := suite.app, suite.ctx
 	enabled := true
@@ -471,6 +649,30 @@ func (suite *IntegrationTestSuite) TestSendEnabled() {
 	fooCoin := sdk.NewCoin("foocoin", sdk.OneInt())
 	barCoin := sdk.NewCoin("barcoin", sdk.OneInt())
 
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Description: sdk.DefaultBondDenom,
+		Base:        sdk.DefaultBondDenom,
+		Display:     sdk.DefaultBondDenom,
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	})
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Description: "foocoin",
+		Base:        "foocoin",
+		Display:     "foocoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	})
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Description: "barcoin",
+		Base:        "barcoin",
+		Display:     "barcoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	})
 	// assert with default (all denom) send enabled both Bar and Bond Denom are enabled
 	suite.Require().Equal(enabled, app.BankKeeper.SendEnabledCoin(ctx, barCoin))
 	suite.Require().Equal(enabled, app.BankKeeper.SendEnabledCoin(ctx, bondCoin))
@@ -481,9 +683,93 @@ func (suite *IntegrationTestSuite) TestSendEnabled() {
 
 	// Set default send_enabled to !enabled, add a foodenom that overrides default as enabled
 	params.DefaultSendEnabled = !enabled
-	params = params.SetSendEnabledParam(fooCoin.Denom, enabled)
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Description: "foocoin",
+		Base:        "foocoin",
+		Display:     "foocoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	})
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Description: sdk.DefaultBondDenom,
+		Base:        sdk.DefaultBondDenom,
+		Display:     sdk.DefaultBondDenom,
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: !enabled,
+	})
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Description: "barcoin",
+		Base:        "barcoin",
+		Display:     "barcoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: !enabled,
+	})
+	// Expect our specific override to be enabled, others to be !enabled.
+	suite.Require().Equal(enabled, app.BankKeeper.SendEnabledCoin(ctx, fooCoin))
+	suite.Require().Equal(!enabled, app.BankKeeper.SendEnabledCoin(ctx, barCoin))
+	suite.Require().Equal(!enabled, app.BankKeeper.SendEnabledCoin(ctx, bondCoin))
+	// Foo coin should be send enabled.
+	err = app.BankKeeper.SendEnabledCoins(ctx, fooCoin)
+	suite.Require().NoError(err)
+	// Expect an error when one coin is not send enabled.
+	err = app.BankKeeper.SendEnabledCoins(ctx, fooCoin, bondCoin)
+	suite.Require().Error(err)
+	// Expect an error when all coins are not send enabled.
+	err = app.BankKeeper.SendEnabledCoins(ctx, bondCoin, barCoin)
+	suite.Require().Error(err)
+}
+func (suite *IntegrationTestSuite) TestSendEnabled2() {
+	app, ctx := suite.app, suite.ctx
+	enabled := true
+	params := types.DefaultParams()
+	suite.Require().Equal(enabled, params.DefaultSendEnabled)
 	app.BankKeeper.SetParams(ctx, params)
 
+	bondCoin := sdk.NewCoin(sdk.DefaultBondDenom, sdk.OneInt())
+	fooCoin := sdk.NewCoin("foocoin", sdk.OneInt())
+	barCoin := sdk.NewCoin("barcoin", sdk.OneInt())
+	bondMeta := types.Metadata{
+		Description: sdk.DefaultBondDenom,
+		Base:        sdk.DefaultBondDenom,
+		Display:     sdk.DefaultBondDenom,
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+	app.BankKeeper.SetDenomMetaData(ctx, bondMeta)
+	fooMeta := types.Metadata{
+		Description: "foocoin",
+		Base:        "foocoin",
+		Display:     "foocoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+	app.BankKeeper.SetDenomMetaData(ctx, fooMeta)
+	barMeta := types.Metadata{
+		Description: "barcoin",
+		Base:        "barcoin",
+		Display:     "barcoin",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+	app.BankKeeper.SetDenomMetaData(ctx, barMeta)
+	// assert with default (all denom) send enabled both Bar and Bond Denom are enabled
+	suite.Require().Equal(enabled, app.BankKeeper.SendEnabledCoin(ctx, barCoin))
+	suite.Require().Equal(enabled, app.BankKeeper.SendEnabledCoin(ctx, bondCoin))
+	// Both coins should be send enabled.
+	err := app.BankKeeper.SendEnabledCoins(ctx, fooCoin, bondCoin)
+	suite.Require().NoError(err)
+	// Set default send_enabled to !enabled, add a foodenom that overrides default as enabled
+	params.DefaultSendEnabled = !enabled
+	barMeta.SendEnabled = !enabled
+	bondMeta.SendEnabled = !enabled
+	app.BankKeeper.SetDenomMetaData(ctx, barMeta)
+	app.BankKeeper.SetDenomMetaData(ctx, bondMeta)
 	// Expect our specific override to be enabled, others to be !enabled.
 	suite.Require().Equal(enabled, app.BankKeeper.SendEnabledCoin(ctx, fooCoin))
 	suite.Require().Equal(!enabled, app.BankKeeper.SendEnabledCoin(ctx, barCoin))
@@ -491,6 +777,37 @@ func (suite *IntegrationTestSuite) TestSendEnabled() {
 
 	// Foo coin should be send enabled.
 	err = app.BankKeeper.SendEnabledCoins(ctx, fooCoin)
+	suite.Require().NoError(err)
+	// Expect an error when one coin is not send enabled.
+	err = app.BankKeeper.SendEnabledCoins(ctx, fooCoin, bondCoin)
+	suite.Require().Error(err)
+	// Expect an error when all coins are not send enabled.
+	err = app.BankKeeper.SendEnabledCoins(ctx, bondCoin, barCoin)
+	suite.Require().Error(err)
+}
+func (suite *IntegrationTestSuite) TestSendEnabled4() {
+	app, ctx := suite.app, suite.ctx
+	enabled := true
+	params := types.DefaultParams()
+	suite.Require().Equal(enabled, params.DefaultSendEnabled)
+	app.BankKeeper.SetParams(ctx, params)
+	bondCoin := sdk.NewCoin(sdk.DefaultBondDenom, sdk.OneInt())
+	fooCoin := sdk.NewCoin("foocoin", sdk.OneInt())
+	barCoin := sdk.NewCoin("barcoin", sdk.OneInt())
+	bondMeta := types.Metadata{
+		Description: sdk.DefaultBondDenom,
+		Base:        sdk.DefaultBondDenom,
+		Display:     sdk.DefaultBondDenom,
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: enabled,
+	}
+	app.BankKeeper.SetDenomMetaData(ctx, bondMeta)
+	// assert with default (all denom) send enabled both Bar and Bond Denom are enabled
+	suite.Require().Equal(enabled, app.BankKeeper.SendEnabledCoin(ctx, bondCoin))
+	suite.Require().Equal(!enabled, app.BankKeeper.SendEnabledCoin(ctx, barCoin))
+	// Foo coin should be send enabled.
+	err := app.BankKeeper.SendEnabledCoins(ctx, bondCoin)
 	suite.Require().NoError(err)
 
 	// Expect an error when one coin is not send enabled.
@@ -977,7 +1294,7 @@ func (suite *IntegrationTestSuite) TestSetDenomMetaData() {
 
 	metadata := suite.getTestMetadata()
 
-	for i := range []int{1, 2} {
+	for i, _ := range metadata {
 		app.BankKeeper.SetDenomMetaData(ctx, metadata[i])
 	}
 
@@ -988,31 +1305,59 @@ func (suite *IntegrationTestSuite) TestSetDenomMetaData() {
 	suite.Require().Equal(metadata[1].GetDenomUnits()[1].GetDenom(), actualMetadata.GetDenomUnits()[1].GetDenom())
 	suite.Require().Equal(metadata[1].GetDenomUnits()[1].GetExponent(), actualMetadata.GetDenomUnits()[1].GetExponent())
 	suite.Require().Equal(metadata[1].GetDenomUnits()[1].GetAliases(), actualMetadata.GetDenomUnits()[1].GetAliases())
+	suite.Require().Equal(metadata[1].GetIssuer(), actualMetadata.GetIssuer())
+	suite.Require().Equal(metadata[1].GetDecimals(), actualMetadata.GetDecimals())
+	actualMetadata = app.BankKeeper.GetDenomMetaData(ctx, metadata[2].Base)
+	suite.Require().Equal(metadata[2].GetBase(), actualMetadata.GetBase())
+	suite.Require().Equal(metadata[2].GetDisplay(), actualMetadata.GetDisplay())
+	suite.Require().Equal(metadata[2].GetDescription(), actualMetadata.GetDescription())
+	suite.Require().Equal(metadata[2].GetIssuer(), actualMetadata.GetIssuer())
+	suite.Require().Equal(metadata[2].GetDecimals(), actualMetadata.GetDecimals())
+	for i, _ := range metadata {
+		actualMetadata := app.BankKeeper.GetDenomMetaData(ctx, metadata[i].Base)
+		suite.Require().True(actualMetadata.Equal(metadata[i]))
+	}
 }
 
+func (suite *IntegrationTestSuite) TestSetDenomMetaData2() {
+	app, ctx := suite.app, suite.ctx
+	metadata := suite.getTestMetadata()
+	for i, _ := range metadata {
+		app.BankKeeper.SetDenomMetaData(ctx, metadata[i])
+	}
+	actualMetadata := app.BankKeeper.GetDenomMetaData(ctx, "pok")
+	suite.Require().Equal("pok", actualMetadata.GetBase())
+	suite.Require().Equal("pok", actualMetadata.GetDisplay())
+	suite.Require().Equal("from1111111111111111", actualMetadata.GetIssuer())
+	suite.Require().EqualValues(18, actualMetadata.GetDecimals())
+	//change
+	actualMetadata.Decimals = 10
+	actualMetadata.Issuer = "from2111111111111111"
+	app.BankKeeper.SetDenomMetaData(ctx, actualMetadata)
+	actualMetadata = app.BankKeeper.GetDenomMetaData(ctx, "pok")
+	suite.Require().Equal("pok", actualMetadata.GetBase())
+	suite.Require().Equal("pok", actualMetadata.GetDisplay())
+	suite.Require().Equal("from2111111111111111", actualMetadata.GetIssuer())
+	suite.Require().EqualValues(10, actualMetadata.GetDecimals())
+}
 func (suite *IntegrationTestSuite) TestIterateAllDenomMetaData() {
 	app, ctx := suite.app, suite.ctx
 
 	expectedMetadata := suite.getTestMetadata()
 	// set metadata
-	for i := range []int{1, 2} {
+	for i, _ := range expectedMetadata {
 		app.BankKeeper.SetDenomMetaData(ctx, expectedMetadata[i])
 	}
+	expectedMetadata = append(expectedMetadata, types.DefaultMetadatas()...)
 	// retrieve metadata
 	actualMetadata := make([]types.Metadata, 0)
 	app.BankKeeper.IterateAllDenomMetaData(ctx, func(metadata types.Metadata) bool {
 		actualMetadata = append(actualMetadata, metadata)
 		return false
 	})
-	// execute checks
-	for i := range []int{1, 2} {
-		suite.Require().Equal(expectedMetadata[i].GetBase(), actualMetadata[i].GetBase())
-		suite.Require().Equal(expectedMetadata[i].GetDisplay(), actualMetadata[i].GetDisplay())
-		suite.Require().Equal(expectedMetadata[i].GetDescription(), actualMetadata[i].GetDescription())
-		suite.Require().Equal(expectedMetadata[i].GetDenomUnits()[1].GetDenom(), actualMetadata[i].GetDenomUnits()[1].GetDenom())
-		suite.Require().Equal(expectedMetadata[i].GetDenomUnits()[1].GetExponent(), actualMetadata[i].GetDenomUnits()[1].GetExponent())
-		suite.Require().Equal(expectedMetadata[i].GetDenomUnits()[1].GetAliases(), actualMetadata[i].GetDenomUnits()[1].GetAliases())
-	}
+
+	suite.Require().Equal(len(actualMetadata), len(expectedMetadata))
+	suite.Require().EqualValues(types.Metadatas(expectedMetadata).Sort(), types.Metadatas(actualMetadata))
 }
 
 func (suite *IntegrationTestSuite) getTestMetadata() []types.Metadata {
@@ -1025,6 +1370,9 @@ func (suite *IntegrationTestSuite) getTestMetadata() []types.Metadata {
 		},
 		Base:    "uatom",
 		Display: "atom",
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: true,
 	},
 		{
 			Description: "The native staking token of the Token Hub.",
@@ -1035,6 +1383,17 @@ func (suite *IntegrationTestSuite) getTestMetadata() []types.Metadata {
 			},
 			Base:    "utoken",
 			Display: "token",
+			Issuer:      "",
+			Decimals:    18,
+			SendEnabled: true,
+		},
+		{
+			Description: "The native staking token of the pok.",
+			Base:        "pok",
+			Display:     "pok",
+			Issuer:      "from1111111111111111",
+			Decimals:    18,
+			SendEnabled: true,
 		},
 	}
 }

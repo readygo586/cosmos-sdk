@@ -1,0 +1,61 @@
+syntax = "proto3";
+package cosmos.token.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+import "cosmos/token/v1beta1/token.proto";
+
+option go_package = "github.com/cosmos/cosmos-sdk/x/token/types";
+
+// Query defines the gRPC querier service.
+service Query {
+    // Balance queries the balance of a single coin for a single account.
+    rpc Symbol(QuerySymbolRequest) returns (QuerySymbolResponse) {
+        option (google.api.http).get = "/cosmos/token/v1beta1/symbol/{denom}";
+    }
+
+    // TotalSupply queries the total supply of all coins.
+    rpc Symbols(QuerySymbolsRequest) returns (QuerySymbolsResponse) {
+        option (google.api.http).get = "/cosmos/token/v1beta1/symbols";
+    }
+
+    // Params queries the parameters of x/bank module.
+    rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+        option (google.api.http).get = "/cosmos/token/v1beta1/params";
+    }
+}
+
+// QueryBalanceRequest is the request type for the Query/Balance RPC method.
+message QuerySymbolRequest {
+    option (gogoproto.equal)           = false;
+    option (gogoproto.goproto_getters) = false;
+
+    // denom is the coin denom to query info.
+    string denom = 1;
+}
+
+// QueryBalanceResponse is the response type for the Query/Balance RPC method.
+message QuerySymbolResponse {
+    // balance is the balance of the coin.
+    cosmos.bank.v1beta1.Metadata info = 1
+    [(gogoproto.nullable) = false, (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/x/bank/types.Metadata"];
+}
+
+// QuerySymbolsRequest is the request type for the Query all symbols RPC method.
+message QuerySymbolsRequest {}
+
+// QuerySymbolsResponse is the response type for the Query/AllBalances RPC
+// method.
+message QuerySymbolsResponse {
+    // balances is the balances of all the coins.
+    repeated string symbols = 1;
+}
+
+// QueryParamsRequest defines the request type for querying x/bank parameters.
+message QueryParamsRequest {}
+
+// QueryParamsResponse defines the response type for querying x/bank parameters.
+message QueryParamsResponse {
+    Params params = 1 [(gogoproto.nullable) = false];
+}

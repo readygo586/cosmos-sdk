@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -61,11 +62,30 @@ func (m Metadata) Validate() error {
 		seenUnits[denomUnit.Denom] = true
 	}
 
-	if !hasDisplay {
+	// in case of no DenomUnits, check Base and Display directly
+	if !hasDisplay && m.Base != m.Display{
 		return fmt.Errorf("metadata must contain a denomination unit with display denom '%s'", m.Display)
 	}
 
-	return nil
+	if m.Decimals > sdk.Precision {
+		return ErrDecimalsOverFlow
+	}
+	return validateIsBool(m.SendEnabled)
+}
+
+//DefaultMetadata define default value
+func DefaultMetadatas() []Metadata {
+	defaultMetaData := Metadata{
+		Description: sdk.DefaultDenom,
+		Base:        sdk.DefaultDenom,
+		Display:     sdk.DefaultDenom,
+		Issuer:      "",
+		Decimals:    18,
+		SendEnabled: true,
+	}
+	return []Metadata{
+		defaultMetaData,
+	}
 }
 
 // Validate performs a basic validation of the denomination unit fields
@@ -89,3 +109,36 @@ func (du DenomUnit) Validate() error {
 
 	return nil
 }
+
+type Metadatas []Metadata
+
+//ValidateBasic define
+func (metadatas Metadatas) Validate() error {
+	for _, m := range metadatas {
+		if err := m.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+//-----------------------------------------------------------------------------
+// Sort interface
+
+// Len implements sort.Interface for Coins
+func (metadatas Metadatas) Len() int { return len(metadatas) }
+
+// Less implements sort.Interface for Coins
+func (metadatas Metadatas) Less(i, j int) bool { return metadatas[i].Base < metadatas[j].Base }
+
+// Swap implements sort.Interface for Coins
+func (metadatas Metadatas) Swap(i, j int) { metadatas[i], metadatas[j] = metadatas[j], metadatas[i] }
+
+var _ sort.Interface = Metadatas{}
+
+// Sort is a helper function to sort the set of coins in-place
+func (metadatas Metadatas) Sort() Metadatas {
+	sort.Sort(metadatas)
+	return metadatas
+}
+

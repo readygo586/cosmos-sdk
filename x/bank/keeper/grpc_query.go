@@ -81,7 +81,7 @@ func (k BaseKeeper) AllBalances(ctx context.Context, req *types.QueryAllBalances
 // TotalSupply implements the Query/TotalSupply gRPC method
 func (k BaseKeeper) TotalSupply(ctx context.Context, _ *types.QueryTotalSupplyRequest) (*types.QueryTotalSupplyResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	totalSupply := k.GetSupply(sdkCtx).GetTotal()
+	totalSupply := k.GetSupplys(sdkCtx).GetTotal()
 
 	return &types.QueryTotalSupplyResponse{Supply: totalSupply}, nil
 }
@@ -97,7 +97,7 @@ func (k BaseKeeper) SupplyOf(c context.Context, req *types.QuerySupplyOfRequest)
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
-	supply := k.GetSupply(ctx).GetTotal().AmountOf(req.Denom)
+	supply := k.GetSupplys(ctx).GetTotal().AmountOf(req.Denom)
 
 	return &types.QuerySupplyOfResponse{Amount: sdk.NewCoin(req.Denom, supply)}, nil
 }

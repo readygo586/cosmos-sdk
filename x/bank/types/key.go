@@ -23,8 +23,9 @@ const (
 // KVStore keys
 var (
 	BalancesPrefix      = []byte("balances")
-	SupplyKey           = []byte{0x00}
-	DenomMetadataPrefix = []byte{0x1}
+	SupplysPrefix  = []byte("supplys")
+	//SupplyKey           = []byte{0x00}
+	DenomMetadataPrefix = []byte("denom_meta")
 )
 
 // DenomMetadataKey returns the denomination metadata key.

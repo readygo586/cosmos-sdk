@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -147,6 +148,38 @@ func TestMetadataValidate(t *testing.T) {
 			},
 			true,
 		},
+		{
+			"without denomuints, sendenable =true",
+			types.Metadata{
+				Description: "The native staking token of the Cosmos Hub.",
+				Base:    sdk.DefaultBondDenom,
+				Display: sdk.DefaultBondDenom,
+				Decimals: 18,
+				SendEnabled: true,
+			},
+			false,
+		},
+		{
+			"without denomuints sendenable = false",
+			types.Metadata{
+				Description: "The native staking token of the Cosmos Hub.",
+				Base:    sdk.DefaultBondDenom,
+				Display: sdk.DefaultBondDenom,
+				Decimals: 18,
+				SendEnabled: false,
+			},
+			false,
+		},
+		{
+			"decimal >  sdk.Precision",
+			types.Metadata{
+				Description: "The native staking token of the Cosmos Hub.",
+				Base:    sdk.DefaultBondDenom,
+				Display: sdk.DefaultBondDenom,
+				Decimals: 19,
+			},
+			true,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -186,6 +219,47 @@ func TestMarshalJSONMetaData(t *testing.T) {
 		},
 		},
 			`[{"description":"The native staking token of the Cosmos Hub.","denom_units":[{"denom":"uatom","aliases":["microatom"]},{"denom":"matom","exponent":3,"aliases":["milliatom"]},{"denom":"atom","exponent":6}],"base":"uatom","display":"atom"}]`},
+
+		{"without denomuints", []types.Metadata{{
+			Description: sdk.DefaultDenom,
+			Base:    sdk.DefaultDenom,
+			Display: sdk.DefaultDenom,
+			Decimals: 18,
+		},
+		},
+			`[{"description":"stake","base":"stake","display":"stake","decimals":"18"}]`},
+
+		{"with issuer", []types.Metadata{{
+			Description: sdk.DefaultDenom,
+			Base:    sdk.DefaultDenom,
+			Display: sdk.DefaultDenom,
+			Issuer: "AAAA",
+			Decimals: 18,
+		},
+		},
+			`[{"description":"stake","base":"stake","display":"stake","issuer":"AAAA","decimals":"18"}]`},
+			{"with sendenable = true", []types.Metadata{{
+			Description: sdk.DefaultDenom,
+			Base:    sdk.DefaultDenom,
+			Display: sdk.DefaultDenom,
+			Issuer: "AAAA",
+			Decimals: 18,
+			SendEnabled: true,
+		},
+		},
+			`[{"description":"stake","base":"stake","display":"stake","issuer":"AAAA","decimals":"18","send_enabled":true}]`},
+
+		{"with sendenable = false", []types.Metadata{{
+			Description: sdk.DefaultDenom,
+			Base:    sdk.DefaultDenom,
+			Display: sdk.DefaultDenom,
+			Issuer: "AAAA",
+			Decimals: 18,
+			SendEnabled: false,
+		},
+		},
+			`[{"description":"stake","base":"stake","display":"stake","issuer":"AAAA","decimals":"18"}]`},
+
 	}
 
 	for _, tc := range testCases {
@@ -205,4 +279,69 @@ func TestMarshalJSONMetaData(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDefaultMetadata(t *testing.T) {
+	data := types.DefaultMetadatas()
+	require.Equal(t, 1, len(data))
+	require.Equal(t, sdk.DefaultDenom, data[0].Description)
+	require.Equal(t, sdk.DefaultDenom, data[0].Base)
+	require.Equal(t, sdk.DefaultDenom, data[0].Display)
+	require.EqualValues(t, 18, data[0].Decimals)
+	require.Equal(t, true, data[0].SendEnabled)
+	require.NoError(t, data[0].Validate())
+	require.NoError(t, types.Metadatas(data).Validate())
+}
+
+
+func TestMetadataSorting(t *testing.T) {
+	metaDatas := []types.Metadata{}
+
+	metaEth := types.Metadata{
+		Description: "eth",
+		Base: "eth",
+		Display: "eth",
+		Decimals: 18,
+		SendEnabled: true,
+	}
+
+	metaBtc := types.Metadata{
+		Description: "btc",
+		Base: "btc",
+		Display: "btc",
+		Decimals: 18,
+		SendEnabled: true,
+	}
+
+	metaBhc := types.Metadata{
+		Description: "bhc",
+		Base: "bhc",
+		Display: "bhc",
+		Decimals: 18,
+		SendEnabled: true,
+	}
+
+	metaAtom := types.Metadata{
+		Description: "atom",
+		Base: "atom",
+		Display: "atom",
+		Decimals: 18,
+		SendEnabled: true,
+	}
+
+	metaTrx := types.Metadata{
+		Description: "trx",
+		Base: "trx",
+		Display: "trx",
+		Decimals: 18,
+		SendEnabled: true,
+	}
+
+	metaDatas = append(metaDatas, metaTrx, metaBhc, metaBtc,metaEth, metaAtom)
+	res := types.Metadatas(metaDatas).Sort()
+	require.Equal(t, metaAtom, res[0])
+	require.Equal(t, metaBhc, res[1])
+	require.Equal(t, metaBtc, res[2])
+	require.Equal(t, metaEth, res[3])
+	require.Equal(t, metaTrx, res[4])
 }

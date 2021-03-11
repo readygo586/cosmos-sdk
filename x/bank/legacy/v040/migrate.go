@@ -28,7 +28,7 @@ func Migrate(
 
 	return &v040bank.GenesisState{
 		Params: v040bank.Params{
-			SendEnabled:        []*v040bank.SendEnabled{},
+			//	SendEnabled:        []*v040bank.SendEnabled{},
 			DefaultSendEnabled: bankGenState.SendEnabled,
 		},
 		Balances:      balances,

@@ -18,22 +18,22 @@ func RandomGenesisDefaultSendParam(r *rand.Rand) bool {
 	return r.Int63n(101) <= 90
 }
 
-// RandomGenesisSendParams randomized Parameters for the bank module
-func RandomGenesisSendParams(r *rand.Rand) types.SendEnabledParams {
-	params := types.DefaultParams()
-	// 90% chance of transfers being DefaultSendEnabled=true or P(a) = 0.9 for success
-	// 50% of the time add an additional denom specific record (P(b) = 0.475 = 0.5 * 0.95)
-	if r.Int63n(101) <= 50 {
-		// set send enabled 95% of the time
-		bondEnabled := r.Int63n(101) <= 95
-		params = params.SetSendEnabledParam(
-			sdk.DefaultBondDenom,
-			bondEnabled)
-	}
-
-	// overall probability of enabled for bond denom is 94.75% (P(a)+P(b) - P(a)*P(b))
-	return params.SendEnabled
-}
+//// RandomGenesisSendParams randomized Parameters for the bank module
+//func RandomGenesisSendParams(r *rand.Rand) types.SendEnabledParams {
+//	params := types.DefaultParams()
+//	// 90% chance of transfers being DefaultSendEnabled=true or P(a) = 0.9 for success
+//	// 50% of the time add an additional denom specific record (P(b) = 0.475 = 0.5 * 0.95)
+//	if r.Int63n(101) <= 50 {
+//		// set send enabled 95% of the time
+//		bondEnabled := r.Int63n(101) <= 95
+//		params = params.SetSendEnabledParam(
+//			sdk.DefaultBondDenom,
+//			bondEnabled)
+//	}
+//
+//	// overall probability of enabled for bond denom is 94.75% (P(a)+P(b) - P(a)*P(b))
+//	return params.SendEnabled
+//}
 
 // RandomGenesisBalances returns a slice of account balances. Each account has
 // a balance of simState.InitialStake for sdk.DefaultBondDenom.
@@ -52,11 +52,11 @@ func RandomGenesisBalances(simState *module.SimulationState) []types.Balance {
 
 // RandomizedGenState generates a random GenesisState for bank
 func RandomizedGenState(simState *module.SimulationState) {
-	var sendEnabledParams types.SendEnabledParams
-	simState.AppParams.GetOrGenerate(
-		simState.Cdc, string(types.KeySendEnabled), &sendEnabledParams, simState.Rand,
-		func(r *rand.Rand) { sendEnabledParams = RandomGenesisSendParams(r) },
-	)
+	//var sendEnabledParams types.SendEnabledParams
+	//simState.AppParams.GetOrGenerate(
+	//	simState.Cdc, string(types.KeySendEnabled), &sendEnabledParams, simState.Rand,
+	//	func(r *rand.Rand) { sendEnabledParams = RandomGenesisSendParams(r) },
+	//)
 
 	var defaultSendEnabledParam bool
 	simState.AppParams.GetOrGenerate(
@@ -70,7 +70,7 @@ func RandomizedGenState(simState *module.SimulationState) {
 
 	bankGenesis := types.GenesisState{
 		Params: types.Params{
-			SendEnabled:        sendEnabledParams,
+			//SendEnabled:        sendEnabledParams,
 			DefaultSendEnabled: defaultSendEnabledParam,
 		},
 		Balances: RandomGenesisBalances(simState),

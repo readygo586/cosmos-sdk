@@ -16,10 +16,11 @@ type SupplyUnmarshaler interface {
 
 // NewDecodeStore returns a function closure that unmarshals the KVPair's values
 // to the corresponding types.
+//TODO(Keep)_20201105, need any longer?
 func NewDecodeStore(cdc SupplyUnmarshaler) func(kvA, kvB kv.Pair) string {
 	return func(kvA, kvB kv.Pair) string {
 		switch {
-		case bytes.Equal(kvA.Key[:1], types.SupplyKey):
+		case bytes.Equal(kvA.Key, types.SupplysPrefix):
 			supplyA, err := cdc.UnmarshalSupply(kvA.Value)
 			if err != nil {
 				panic(err)

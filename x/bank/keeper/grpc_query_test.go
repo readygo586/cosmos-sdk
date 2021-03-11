@@ -1,11 +1,10 @@
-// +build norace
+
 
 package keeper_test
 
 import (
 	gocontext "context"
 	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -86,8 +85,8 @@ func (suite *IntegrationTestSuite) TestQueryAllBalances() {
 
 func (suite *IntegrationTestSuite) TestQueryTotalSupply() {
 	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000)))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	expectedTotalSupply := types.NewSupplys(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000)))
+	app.BankKeeper.SetSupplys(ctx, expectedTotalSupply)
 
 	res, err := queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
 	suite.Require().NoError(err)
@@ -96,22 +95,78 @@ func (suite *IntegrationTestSuite) TestQueryTotalSupply() {
 	suite.Require().Equal(expectedTotalSupply.Total, res.Supply)
 }
 
+func (suite *IntegrationTestSuite) TestQueryTotalSupply2() {
+	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
+
+	test1Supply := sdk.NewInt64Coin("test1", 4000000)
+	test2Supply := sdk.NewInt64Coin("test2", 700000000)
+	expectedTotalSupply := types.NewSupplys(sdk.NewCoins(test1Supply, test2Supply))
+	app.BankKeeper.SetSupplys(ctx, expectedTotalSupply)
+
+	res, err := queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
+	suite.Require().NoError(err)
+	suite.Require().Equal(expectedTotalSupply.GetTotal(), res.Supply)
+}
+
+func (suite *IntegrationTestSuite) TestQueryTotalSupply3() {
+	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
+
+	test1Supply := sdk.NewInt64Coin("test1", 4000000)
+	test2Supply := sdk.NewInt64Coin("test2", 700000000)
+	expectedTotalSupply := types.NewSupplys(sdk.NewCoins(test1Supply, test2Supply))
+	app.BankKeeper.SetSupplys(ctx, expectedTotalSupply)
+
+	res, err := queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
+	suite.Require().NoError(err)
+	suite.Require().Equal(expectedTotalSupply.GetTotal(), res.Supply)
+
+	test3Supply := sdk.NewInt64Coin("test3", 8000000)
+	expectedTotalSupply = types.NewSupplys(sdk.NewCoins(test1Supply, test2Supply, test3Supply))
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(test3Supply))
+
+	res, err = queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
+	suite.Require().NoError(err)
+	suite.Require().Equal(expectedTotalSupply.GetTotal(), res.Supply)
+
+	test1Supply = sdk.NewInt64Coin("test1", 2000000)
+	expectedTotalSupply = types.NewSupplys(sdk.NewCoins(test1Supply, test2Supply, test3Supply))
+	app.BankKeeper.SetSupply(ctx, types.NewSupply(test1Supply))
+
+	res, err = queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
+	suite.Require().NoError(err)
+	suite.Require().Equal(expectedTotalSupply.GetTotal(), res.Supply)
+}
+
+
 func (suite *IntegrationTestSuite) TestQueryTotalSupplyOf() {
 	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
 
 	test1Supply := sdk.NewInt64Coin("test1", 4000000)
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(test1Supply, test2Supply))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	expectedTotalSupply := types.NewSupplys(sdk.NewCoins(test1Supply, test2Supply))
+	app.BankKeeper.SetSupplys(ctx, expectedTotalSupply)
 
-	_, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{})
+        total, err := queryClient.TotalSupply(gocontext.Background(), &types.QueryTotalSupplyRequest{})
+	suite.Require().NoError(err)
+	suite.Require().Equal(expectedTotalSupply.GetTotal(), total.Supply)
+	res, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{})
 	suite.Require().Error(err)
+	suite.Require().Nil(res)
 
-	res, err := queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: test1Supply.Denom})
+	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: test1Supply.Denom})
 	suite.Require().NoError(err)
 	suite.Require().NotNil(res)
 
 	suite.Require().Equal(test1Supply, res.Amount)
+	
+	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: test2Supply.Denom})
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res)
+	suite.Require().Equal(test2Supply, res.Amount)
+	
+	res, err = queryClient.SupplyOf(gocontext.Background(), &types.QuerySupplyOfRequest{Denom: "test3"})
+	suite.Require().NoError(err)
+	suite.Require().Equal(sdk.NewCoin("test3", sdk.ZeroInt()), res.Amount)
 }
 
 func (suite *IntegrationTestSuite) TestQueryParams() {
@@ -121,7 +176,7 @@ func (suite *IntegrationTestSuite) TestQueryParams() {
 	suite.Require().Equal(suite.app.BankKeeper.GetParams(suite.ctx), res.GetParams())
 }
 
-func (suite *IntegrationTestSuite) QueryDenomsMetadataRequest() {
+func (suite *IntegrationTestSuite) TestQueryDenomsMetadataRequest() {
 	var (
 		req         *types.QueryDenomsMetadataRequest
 		expMetadata = []types.Metadata{}
@@ -135,6 +190,8 @@ func (suite *IntegrationTestSuite) QueryDenomsMetadataRequest() {
 		{
 			"empty pagination",
 			func() {
+				expMetadata = []types.Metadata{}
+				expMetadata = append(expMetadata,types.DefaultMetadatas()...)
 				req = &types.QueryDenomsMetadataRequest{}
 			},
 			true,
@@ -142,6 +199,8 @@ func (suite *IntegrationTestSuite) QueryDenomsMetadataRequest() {
 		{
 			"success, no results",
 			func() {
+				expMetadata = []types.Metadata{}
+				expMetadata = append(expMetadata,types.DefaultMetadatas()...)
 				req = &types.QueryDenomsMetadataRequest{
 					Pagination: &query.PageRequest{
 						Limit:      3,
@@ -154,6 +213,7 @@ func (suite *IntegrationTestSuite) QueryDenomsMetadataRequest() {
 		{
 			"success",
 			func() {
+				expMetadata = []types.Metadata{}
 				metadataAtom := types.Metadata{
 					Description: "The native staking token of the Cosmos Hub.",
 					DenomUnits: []*types.DenomUnit{
@@ -170,6 +230,8 @@ func (suite *IntegrationTestSuite) QueryDenomsMetadataRequest() {
 					},
 					Base:    "uatom",
 					Display: "atom",
+					Decimals: 18,
+					SendEnabled: false,
 				}
 
 				metadataEth := types.Metadata{
@@ -185,13 +247,39 @@ func (suite *IntegrationTestSuite) QueryDenomsMetadataRequest() {
 							Aliases:  []string{"ETH", "ether"},
 						},
 					},
-					Base:    "wei",
+					Base:    "eth",
 					Display: "eth",
+					Decimals: 18,
+					SendEnabled: true,
+				}
+
+				metadataTrx := types.Metadata{
+					Description: "trx native token",
+					Base:    "trx",
+					Display: "trx",
+					Issuer: "Sun",
+					Decimals: 18,
+					SendEnabled: true,
+
+				}
+
+				metadataBhc := types.Metadata{
+					Description: "bhc native token",
+					Base:    "bhc",
+					Display: "bhc",
+					Issuer: "bhc",
+					Decimals: 18,
+					SendEnabled: true,
+
 				}
 
 				suite.app.BankKeeper.SetDenomMetaData(suite.ctx, metadataAtom)
 				suite.app.BankKeeper.SetDenomMetaData(suite.ctx, metadataEth)
-				expMetadata = []types.Metadata{metadataAtom, metadataEth}
+				suite.app.BankKeeper.SetDenomMetaData(suite.ctx, metadataTrx)
+				suite.app.BankKeeper.SetDenomMetaData(suite.ctx, metadataBhc)
+				expMetadata = append(expMetadata, types.DefaultMetadatas()...)
+				expMetadata = append(expMetadata,metadataAtom, metadataEth,metadataTrx,metadataBhc)
+				expMetadata = types.Metadatas(expMetadata).Sort()
 				req = &types.QueryDenomsMetadataRequest{
 					Pagination: &query.PageRequest{
 						Limit:      7,
@@ -269,6 +357,25 @@ func (suite *IntegrationTestSuite) QueryDenomMetadataRequest() {
 					},
 					Base:    "uatom",
 					Display: "atom",
+				}
+
+				suite.app.BankKeeper.SetDenomMetaData(suite.ctx, expMetadata)
+				req = &types.QueryDenomMetadataRequest{
+					Denom: expMetadata.Base,
+				}
+			},
+			true,
+		},
+		{
+			"success without denomuint",
+			func() {
+				expMetadata := types.Metadata{
+					Description: "eth",
+					Base:    "eth",
+					Display: "eth",
+					Decimals: 18,
+					SendEnabled: true,
+					Issuer: "Viltak",
 				}
 
 				suite.app.BankKeeper.SetDenomMetaData(suite.ctx, expMetadata)

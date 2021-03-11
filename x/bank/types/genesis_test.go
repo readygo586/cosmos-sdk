@@ -1,16 +1,15 @@
 package types_test
 
 import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 func TestGenesisStateValidate(t *testing.T) {
-
 	testCases := []struct {
 		name         string
 		genesisState types.GenesisState
@@ -43,17 +42,6 @@ func TestGenesisStateValidate(t *testing.T) {
 			false,
 		},
 		{"empty genesisState", types.GenesisState{}, false},
-		{
-			"invalid params ",
-			types.GenesisState{
-				Params: types.Params{
-					SendEnabled: []*types.SendEnabled{
-						{"", true},
-					},
-				},
-			},
-			true,
-		},
 		{
 			"dup balances",
 			types.GenesisState{
@@ -149,4 +137,10 @@ func TestGenesisStateValidate(t *testing.T) {
 			}
 		})
 	}
+}
+func TestDefaultGenesisState(t *testing.T) {
+	gs := types.DefaultGenesisState()
+	require.NoError(t, gs.Validate())
+	require.NoError(t, types.Metadatas(gs.DenomMetadata).Validate())
+	require.Equal(t, 1, len(gs.DenomMetadata))
 }

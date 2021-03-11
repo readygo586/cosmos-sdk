@@ -30,6 +30,11 @@ type SendKeeper interface {
 	SendEnabledCoin(ctx sdk.Context, coin sdk.Coin) bool
 	SendEnabledCoins(ctx sdk.Context, coins ...sdk.Coin) error
 
+	GetDenomMetaData(ctx sdk.Context, denom string) types.Metadata
+	SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata)
+	GetAllDenomMetaData(ctx sdk.Context) []types.Metadata
+	IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool)
+
 	BlockedAddr(addr sdk.AccAddress) bool
 }
 
@@ -288,7 +293,63 @@ func (k BaseSendKeeper) SendEnabledCoins(ctx sdk.Context, coins ...sdk.Coin) err
 
 // SendEnabledCoin returns the current SendEnabled status of the provided coin's denom
 func (k BaseSendKeeper) SendEnabledCoin(ctx sdk.Context, coin sdk.Coin) bool {
-	return k.GetParams(ctx).SendEnabledDenom(coin.Denom)
+	return k.GetDenomMetaData(ctx, coin.Denom).SendEnabled
+}
+
+
+// GetDenomMetaData retrieves the denomination metadata
+func (k BaseSendKeeper) GetDenomMetaData(ctx sdk.Context, denom string) types.Metadata {
+	store := ctx.KVStore(k.storeKey)
+	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataPrefix)
+	bz := denomMetaDataStore.Get([]byte(denom))
+	if bz == nil {
+		return types.Metadata{}
+	}
+
+	var metadata types.Metadata
+	k.cdc.MustUnmarshalBinaryBare(bz, &metadata)
+
+	return metadata
+}
+
+// GetAllDenomMetaData retrieves all denominations metadata
+func (k BaseSendKeeper) GetAllDenomMetaData(ctx sdk.Context) []types.Metadata {
+	denomMetaData := make([]types.Metadata, 0)
+	k.IterateAllDenomMetaData(ctx, func(metadata types.Metadata) bool {
+		denomMetaData = append(denomMetaData, metadata)
+		return false
+	})
+
+	return types.Metadatas(denomMetaData).Sort()
+}
+
+// IterateAllDenomMetaData iterates over all the denominations metadata and
+// provides the metadata to a callback. If true is returned from the
+// callback, iteration is halted.
+func (k BaseSendKeeper) IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool) {
+	store := ctx.KVStore(k.storeKey)
+	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataPrefix)
+
+	iterator := denomMetaDataStore.Iterator(nil, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var metadata types.Metadata
+		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &metadata)
+
+		if cb(metadata) {
+			break
+		}
+	}
+}
+
+// SetDenomMetaData sets the denominations metadata
+func (k BaseSendKeeper) SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata) {
+	store := ctx.KVStore(k.storeKey)
+	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataPrefix)
+
+	m := k.cdc.MustMarshalBinaryBare(&denomMetaData)
+	denomMetaDataStore.Set([]byte(denomMetaData.Base), m)
 }
 
 // BlockedAddr checks if a given address is restricted from

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -24,12 +25,10 @@ type Keeper interface {
 	InitGenesis(sdk.Context, *types.GenesisState)
 	ExportGenesis(sdk.Context) *types.GenesisState
 
-	GetSupply(ctx sdk.Context) exported.SupplyI
+	GetSupplys(ctx sdk.Context) exported.SupplysI
+	SetSupplys(ctx sdk.Context, supplys exported.SupplysI)
+	GetSupply(ctx sdk.Context, denom string) exported.SupplyI
 	SetSupply(ctx sdk.Context, supply exported.SupplyI)
-
-	GetDenomMetaData(ctx sdk.Context, denom string) types.Metadata
-	SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata)
-	IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool)
 
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error
@@ -152,12 +151,45 @@ func (k BaseKeeper) UndelegateCoins(ctx sdk.Context, moduleAccAddr, delegatorAdd
 	return nil
 }
 
-// GetSupply retrieves the Supply from store
-func (k BaseKeeper) GetSupply(ctx sdk.Context) exported.SupplyI {
+// GetSupplys retrieves the Supplys from store,
+// GetSupplys is gas-consumed operation, Please use GetSupply instead
+func (k BaseKeeper) GetSupplys(ctx sdk.Context) exported.SupplysI {
+	supplys := sdk.NewCoins()
+	k.IterateSupplys(ctx, func(s exported.SupplyI) bool {
+		supplys = supplys.Add(s.GetTotal())
+		return false
+	})
+	return types.NewSupplys(supplys.Sort())
+}
+// ClearSupplys clear the Supplys from store,
+// ClearSupplys is gas-consumed operation, is supposed to be used only in test
+func (k BaseKeeper) clearSupplys(ctx sdk.Context) {
+	keys := [][]byte{}
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.SupplyKey)
+	supplysStore := prefix.NewStore(store, types.SupplysPrefix)
+	k.IterateSupplys(ctx, func(s exported.SupplyI) bool {
+		keys = append(keys, []byte(s.GetTotal().Denom))
+		return false
+	})
+	for _, key := range keys {
+		supplysStore.Delete(key)
+	}
+}
+// SetSupplys set the Supplys from store,
+// SetSupplys is gas-consumed operation, Please use SetSupply instead
+func (k BaseKeeper) SetSupplys(ctx sdk.Context, supplys exported.SupplysI) {
+	//clear before set new value
+	k.clearSupplys(ctx)
+	for _, coin := range supplys.GetTotal() {
+		k.SetSupply(ctx, types.NewSupply(coin))
+	}
+}
+func (k BaseKeeper) GetSupply(ctx sdk.Context, denom string) exported.SupplyI {
+	store := ctx.KVStore(k.storeKey)
+	supplysStore := prefix.NewStore(store, types.SupplysPrefix)
+	bz := supplysStore.Get([]byte(denom))
 	if bz == nil {
-		panic("stored supply should not have been nil")
+		return types.NewSupply(sdk.NewCoin(denom, sdk.ZeroInt()))
 	}
 
 	supply, err := k.UnmarshalSupply(bz)
@@ -171,68 +203,34 @@ func (k BaseKeeper) GetSupply(ctx sdk.Context) exported.SupplyI {
 // SetSupply sets the Supply to store
 func (k BaseKeeper) SetSupply(ctx sdk.Context, supply exported.SupplyI) {
 	store := ctx.KVStore(k.storeKey)
+	supplysStore := prefix.NewStore(store, types.SupplysPrefix)
+	denom := supply.GetTotal().Denom
 	bz, err := k.MarshalSupply(supply)
 	if err != nil {
 		panic(err)
 	}
 
-	store.Set(types.SupplyKey, bz)
+       supplysStore.Set([]byte(denom), bz)
 }
 
-// GetDenomMetaData retrieves the denomination metadata
-func (k BaseKeeper) GetDenomMetaData(ctx sdk.Context, denom string) types.Metadata {
+
+func (k BaseKeeper) IterateSupplys(ctx sdk.Context, cb func(s exported.SupplyI) bool) {
 	store := ctx.KVStore(k.storeKey)
-	store = prefix.NewStore(store, types.DenomMetadataKey(denom))
+	supplysStore := prefix.NewStore(store, types.SupplysPrefix)
 
-	bz := store.Get([]byte(denom))
-	if bz == nil {
-		return types.Metadata{}
-	}
-
-	var metadata types.Metadata
-	k.cdc.MustUnmarshalBinaryBare(bz, &metadata)
-
-	return metadata
-}
-
-// GetAllDenomMetaData retrieves all denominations metadata
-func (k BaseKeeper) GetAllDenomMetaData(ctx sdk.Context) []types.Metadata {
-	denomMetaData := make([]types.Metadata, 0)
-	k.IterateAllDenomMetaData(ctx, func(metadata types.Metadata) bool {
-		denomMetaData = append(denomMetaData, metadata)
-		return false
-	})
-
-	return denomMetaData
-}
-
-// IterateAllDenomMetaData iterates over all the denominations metadata and
-// provides the metadata to a callback. If true is returned from the
-// callback, iteration is halted.
-func (k BaseKeeper) IterateAllDenomMetaData(ctx sdk.Context, cb func(types.Metadata) bool) {
-	store := ctx.KVStore(k.storeKey)
-	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataPrefix)
-
-	iterator := denomMetaDataStore.Iterator(nil, nil)
+	iterator := supplysStore.Iterator(nil, nil)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		var metadata types.Metadata
-		k.cdc.MustUnmarshalBinaryBare(iterator.Value(), &metadata)
+		supply, err := k.UnmarshalSupply(iterator.Value())
+		if err != nil {
+			panic(err)
+		}
 
-		if cb(metadata) {
+		if cb(supply) {
 			break
 		}
 	}
-}
-
-// SetDenomMetaData sets the denominations metadata
-func (k BaseKeeper) SetDenomMetaData(ctx sdk.Context, denomMetaData types.Metadata) {
-	store := ctx.KVStore(k.storeKey)
-	denomMetaDataStore := prefix.NewStore(store, types.DenomMetadataKey(denomMetaData.Base))
-
-	m := k.cdc.MustMarshalBinaryBare(&denomMetaData)
-	denomMetaDataStore.Set([]byte(denomMetaData.Base), m)
 }
 
 // SendCoinsFromModuleToAccount transfers coins from a ModuleAccount to an AccAddress.
@@ -337,14 +335,16 @@ func (k BaseKeeper) MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins)
 		return err
 	}
 
-	// update total supply
-	supply := k.GetSupply(ctx)
-	supply.Inflate(amt)
+	// update total supply,
+	for _, coin := range amt {
+		supply := k.GetSupply(ctx, coin.Denom)
+		supply.Inflate(coin)
 
 	k.SetSupply(ctx, supply)
+	}
 
 	logger := k.Logger(ctx)
-	logger.Info("minted coins from module account", "amount", amt.String(), "from", moduleName)
+	logger.Info(fmt.Sprintf("minted %s from %s module account", amt.String(), moduleName))
 
 	return nil
 }
@@ -366,13 +366,15 @@ func (k BaseKeeper) BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins)
 		return err
 	}
 
-	// update total supply
-	supply := k.GetSupply(ctx)
-	supply.Deflate(amt)
+	// update affected token's supply
+	for _, coin := range amt {
+		supply := k.GetSupply(ctx, coin.Denom)
+		supply.Deflate(coin)
 	k.SetSupply(ctx, supply)
+	}
 
 	logger := k.Logger(ctx)
-	logger.Info("burned tokens from module account", "amount", amt.String(), "from", moduleName)
+	logger.Info(fmt.Sprintf("burned %s from %s module account", amt.String(), moduleName))
 
 	return nil
 }
@@ -403,7 +405,6 @@ func (k BaseKeeper) trackUndelegation(ctx sdk.Context, addr sdk.AccAddress, amt 
 		// TODO: return error on account.TrackUndelegation
 		vacc.TrackUndelegation(amt)
 	}
-
 	return nil
 }
 

@@ -1,0 +1,12 @@
+syntax = "proto3";
+package cosmos.token.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/token/v1beta1/token.proto";
+
+option go_package = "github.com/cosmos/cosmos-sdk/x/token/types";
+
+message GenesisState {
+    // params defines all the paramaters of the module.
+    Params params = 1 [(gogoproto.nullable) = false];
+}

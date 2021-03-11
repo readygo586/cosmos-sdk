@@ -32,8 +32,8 @@
     - [Metadata](#cosmos.bank.v1beta1.Metadata)
     - [Output](#cosmos.bank.v1beta1.Output)
     - [Params](#cosmos.bank.v1beta1.Params)
-    - [SendEnabled](#cosmos.bank.v1beta1.SendEnabled)
     - [Supply](#cosmos.bank.v1beta1.Supply)
+    - [Supplys](#cosmos.bank.v1beta1.Supplys)
   
 - [cosmos/bank/v1beta1/genesis.proto](#cosmos/bank/v1beta1/genesis.proto)
     - [Balance](#cosmos.bank.v1beta1.Balance)
@@ -412,6 +412,35 @@
     - [MsgUndelegateResponse](#cosmos.staking.v1beta1.MsgUndelegateResponse)
   
     - [Msg](#cosmos.staking.v1beta1.Msg)
+  
+- [cosmos/token/v1beta1/token.proto](#cosmos/token/v1beta1/token.proto)
+    - [DisableTokenProposal](#cosmos.token.v1beta1.DisableTokenProposal)
+    - [ParamChange](#cosmos.token.v1beta1.ParamChange)
+    - [Params](#cosmos.token.v1beta1.Params)
+    - [TokenParamsChangeProposal](#cosmos.token.v1beta1.TokenParamsChangeProposal)
+  
+- [cosmos/token/v1beta1/genesis.proto](#cosmos/token/v1beta1/genesis.proto)
+    - [GenesisState](#cosmos.token.v1beta1.GenesisState)
+  
+- [cosmos/token/v1beta1/querier.proto](#cosmos/token/v1beta1/querier.proto)
+    - [QueryParamsRequest](#cosmos.token.v1beta1.QueryParamsRequest)
+    - [QueryParamsResponse](#cosmos.token.v1beta1.QueryParamsResponse)
+    - [QuerySymbolRequest](#cosmos.token.v1beta1.QuerySymbolRequest)
+    - [QuerySymbolResponse](#cosmos.token.v1beta1.QuerySymbolResponse)
+    - [QuerySymbolsRequest](#cosmos.token.v1beta1.QuerySymbolsRequest)
+    - [QuerySymbolsResponse](#cosmos.token.v1beta1.QuerySymbolsResponse)
+  
+    - [Query](#cosmos.token.v1beta1.Query)
+  
+- [cosmos/token/v1beta1/tx.proto](#cosmos/token/v1beta1/tx.proto)
+    - [MsgBurnToken](#cosmos.token.v1beta1.MsgBurnToken)
+    - [MsgBurnTokenResponse](#cosmos.token.v1beta1.MsgBurnTokenResponse)
+    - [MsgInflateToken](#cosmos.token.v1beta1.MsgInflateToken)
+    - [MsgInflateTokenResponse](#cosmos.token.v1beta1.MsgInflateTokenResponse)
+    - [MsgNewToken](#cosmos.token.v1beta1.MsgNewToken)
+    - [MsgNewTokenResponse](#cosmos.token.v1beta1.MsgNewTokenResponse)
+  
+    - [Msg](#cosmos.token.v1beta1.Msg)
   
 - [cosmos/tx/signing/v1beta1/signing.proto](#cosmos/tx/signing/v1beta1/signing.proto)
     - [SignatureDescriptor](#cosmos.tx.signing.v1beta1.SignatureDescriptor)
@@ -1014,6 +1043,9 @@ a basic token.
 | `denom_units` | [DenomUnit](#cosmos.bank.v1beta1.DenomUnit) | repeated | denom_units represents the list of DenomUnit's for a given coin |
 | `base` | [string](#string) |  | base represents the base denom (should be the DenomUnit with exponent = 0). |
 | `display` | [string](#string) |  | display indicates the suggested denom that should be displayed in clients. |
+| `issuer` | [string](#string) |  | token's issuser |
+| `decimals` | [uint64](#uint64) |  | token's decimals |
+| `send_enabled` | [bool](#bool) |  | send |
 
 
 
@@ -1044,25 +1076,7 @@ Params defines the parameters for the bank module.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `send_enabled` | [SendEnabled](#cosmos.bank.v1beta1.SendEnabled) | repeated |  |
 | `default_send_enabled` | [bool](#bool) |  |  |
-
-
-
-
-
-
-<a name="cosmos.bank.v1beta1.SendEnabled"></a>
-
-### SendEnabled
-SendEnabled maps coin denom to a send_enabled status (whether a denom is
-sendable).
-
-
-| Field | Type | Label | Description |
-| ----- | ---- | ----- | ----------- |
-| `denom` | [string](#string) |  |  |
-| `enabled` | [bool](#bool) |  |  |
 
 
 
@@ -1073,6 +1087,22 @@ sendable).
 
 ### Supply
 Supply represents a struct that passively keeps track of the total supply
+amounts of a specific denom in the network.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `total` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
+
+
+
+
+
+
+<a name="cosmos.bank.v1beta1.Supplys"></a>
+
+### Supplys
+Supplys represents a struct that passively keeps track of the total supply
 amounts in the network.
 
 
@@ -6130,6 +6160,339 @@ Msg defines the staking Msg service.
 | `Delegate` | [MsgDelegate](#cosmos.staking.v1beta1.MsgDelegate) | [MsgDelegateResponse](#cosmos.staking.v1beta1.MsgDelegateResponse) | Delegate defines a method for performing a delegation of coins from a delegator to a validator. | |
 | `BeginRedelegate` | [MsgBeginRedelegate](#cosmos.staking.v1beta1.MsgBeginRedelegate) | [MsgBeginRedelegateResponse](#cosmos.staking.v1beta1.MsgBeginRedelegateResponse) | BeginRedelegate defines a method for performing a redelegation of coins from a delegator and source validator to a destination validator. | |
 | `Undelegate` | [MsgUndelegate](#cosmos.staking.v1beta1.MsgUndelegate) | [MsgUndelegateResponse](#cosmos.staking.v1beta1.MsgUndelegateResponse) | Undelegate defines a method for performing an undelegation from a delegate and a validator. | |
+
+ <!-- end services -->
+
+
+
+<a name="cosmos/token/v1beta1/token.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## cosmos/token/v1beta1/token.proto
+
+
+
+<a name="cosmos.token.v1beta1.DisableTokenProposal"></a>
+
+### DisableTokenProposal
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `title` | [string](#string) |  |  |
+| `description` | [string](#string) |  |  |
+| `denom` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.ParamChange"></a>
+
+### ParamChange
+ParamChange defines an individual parameter change, for use in
+ParameterChangeProposal.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [string](#string) |  |  |
+| `value` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.Params"></a>
+
+### Params
+Params defines the parameters for the bank module.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `token_cache_size` | [uint64](#uint64) |  |  |
+| `new_token_fee` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.TokenParamsChangeProposal"></a>
+
+### TokenParamsChangeProposal
+ParameterChangeProposal defines a proposal to change one or more parameters.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `title` | [string](#string) |  |  |
+| `description` | [string](#string) |  |  |
+| `denom` | [string](#string) |  |  |
+| `changes` | [ParamChange](#cosmos.token.v1beta1.ParamChange) | repeated |  |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+ <!-- end services -->
+
+
+
+<a name="cosmos/token/v1beta1/genesis.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## cosmos/token/v1beta1/genesis.proto
+
+
+
+<a name="cosmos.token.v1beta1.GenesisState"></a>
+
+### GenesisState
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `params` | [Params](#cosmos.token.v1beta1.Params) |  | params defines all the paramaters of the module. |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+ <!-- end services -->
+
+
+
+<a name="cosmos/token/v1beta1/querier.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## cosmos/token/v1beta1/querier.proto
+
+
+
+<a name="cosmos.token.v1beta1.QueryParamsRequest"></a>
+
+### QueryParamsRequest
+QueryParamsRequest defines the request type for querying x/bank parameters.
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.QueryParamsResponse"></a>
+
+### QueryParamsResponse
+QueryParamsResponse defines the response type for querying x/bank parameters.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `params` | [Params](#cosmos.token.v1beta1.Params) |  |  |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.QuerySymbolRequest"></a>
+
+### QuerySymbolRequest
+QueryBalanceRequest is the request type for the Query/Balance RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `denom` | [string](#string) |  | denom is the coin denom to query info. |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.QuerySymbolResponse"></a>
+
+### QuerySymbolResponse
+QueryBalanceResponse is the response type for the Query/Balance RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `info` | [cosmos.bank.v1beta1.Metadata](#cosmos.bank.v1beta1.Metadata) |  | balance is the balance of the coin. |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.QuerySymbolsRequest"></a>
+
+### QuerySymbolsRequest
+QuerySymbolsRequest is the request type for the Query all symbols RPC method.
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.QuerySymbolsResponse"></a>
+
+### QuerySymbolsResponse
+QuerySymbolsResponse is the response type for the Query/AllBalances RPC
+method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `symbols` | [string](#string) | repeated | balances is the balances of all the coins. |
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+<a name="cosmos.token.v1beta1.Query"></a>
+
+### Query
+Query defines the gRPC querier service.
+
+| Method Name | Request Type | Response Type | Description | HTTP Verb | Endpoint |
+| ----------- | ------------ | ------------- | ------------| ------- | -------- |
+| `Symbol` | [QuerySymbolRequest](#cosmos.token.v1beta1.QuerySymbolRequest) | [QuerySymbolResponse](#cosmos.token.v1beta1.QuerySymbolResponse) | Balance queries the balance of a single coin for a single account. | GET|/cosmos/token/v1beta1/symbol/{denom}|
+| `Symbols` | [QuerySymbolsRequest](#cosmos.token.v1beta1.QuerySymbolsRequest) | [QuerySymbolsResponse](#cosmos.token.v1beta1.QuerySymbolsResponse) | TotalSupply queries the total supply of all coins. | GET|/cosmos/token/v1beta1/symbols|
+| `Params` | [QueryParamsRequest](#cosmos.token.v1beta1.QueryParamsRequest) | [QueryParamsResponse](#cosmos.token.v1beta1.QueryParamsResponse) | Params queries the parameters of x/bank module. | GET|/cosmos/token/v1beta1/params|
+
+ <!-- end services -->
+
+
+
+<a name="cosmos/token/v1beta1/tx.proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## cosmos/token/v1beta1/tx.proto
+
+
+
+<a name="cosmos.token.v1beta1.MsgBurnToken"></a>
+
+### MsgBurnToken
+MsgInflateToken represents a message to inflate coins
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `from_address` | [string](#string) |  |  |
+| `amount` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.MsgBurnTokenResponse"></a>
+
+### MsgBurnTokenResponse
+MsgNewTokenResponse defines the Msg/NewToken response type.
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.MsgInflateToken"></a>
+
+### MsgInflateToken
+MsgInflateToken represents a message to inflate coins
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `from_address` | [string](#string) |  |  |
+| `to_address` | [string](#string) |  |  |
+| `amount` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.MsgInflateTokenResponse"></a>
+
+### MsgInflateTokenResponse
+MsgNewTokenResponse defines the Msg/NewToken response type.
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.MsgNewToken"></a>
+
+### MsgNewToken
+MsgNewToken represents a message to new coins
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `from_address` | [string](#string) |  |  |
+| `to_address` | [string](#string) |  |  |
+| `decimals` | [uint64](#uint64) |  |  |
+| `amount` | [cosmos.base.v1beta1.Coin](#cosmos.base.v1beta1.Coin) |  |  |
+
+
+
+
+
+
+<a name="cosmos.token.v1beta1.MsgNewTokenResponse"></a>
+
+### MsgNewTokenResponse
+MsgNewTokenResponse defines the Msg/NewToken response type.
+
+
+
+
+
+ <!-- end messages -->
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+
+<a name="cosmos.token.v1beta1.Msg"></a>
+
+### Msg
+
+
+| Method Name | Request Type | Response Type | Description | HTTP Verb | Endpoint |
+| ----------- | ------------ | ------------- | ------------| ------- | -------- |
+| `NewToken` | [MsgNewToken](#cosmos.token.v1beta1.MsgNewToken) | [MsgNewTokenResponse](#cosmos.token.v1beta1.MsgNewTokenResponse) | NewToken fines a method for newing coins | |
+| `InflateToken` | [MsgInflateToken](#cosmos.token.v1beta1.MsgInflateToken) | [MsgInflateTokenResponse](#cosmos.token.v1beta1.MsgInflateTokenResponse) | InfateToken defines a method for inflating token. | |
+| `BurnToken` | [MsgBurnToken](#cosmos.token.v1beta1.MsgBurnToken) | [MsgBurnTokenResponse](#cosmos.token.v1beta1.MsgBurnTokenResponse) | BurnToken defines a method for burning coins | |
 
  <!-- end services -->
 

@@ -88,8 +88,29 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryAllBalances() {
 func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupply() {
 	app, ctx := suite.app, suite.ctx
 	legacyAmino := app.LegacyAmino()
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000)))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	expectedTotalSupply := types.NewSupplys(sdk.NewCoins(sdk.NewInt64Coin("test", 400000000)))
+	app.BankKeeper.SetSupplys(ctx, expectedTotalSupply)
+	req := abci.RequestQuery{
+		Path: fmt.Sprintf("custom/%s/%s", types.ModuleName, types.QueryTotalSupply),
+		Data: []byte{},
+	}
+	querier := keeper.NewQuerier(app.BankKeeper, legacyAmino)
+	res, err := querier(ctx, []string{types.QueryTotalSupply}, req)
+	suite.Require().NotNil(err)
+	suite.Require().Nil(res)
+	req.Data = legacyAmino.MustMarshalJSON(types.NewQueryTotalSupplyParams(1, 100))
+	res, err = querier(ctx, []string{types.QueryTotalSupply}, req)
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res)
+	var resp sdk.Coins
+	suite.Require().NoError(legacyAmino.UnmarshalJSON(res, &resp))
+	suite.Require().Equal(expectedTotalSupply.Total, resp)
+}
+func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupply2() {
+	app, ctx := suite.app, suite.ctx
+	legacyAmino := app.LegacyAmino()
+	expectedTotalSupply := types.NewSupplys(sdk.NewCoins(sdk.NewInt64Coin("test1", 400000000), sdk.NewInt64Coin("test2", 400000000)))
+	app.BankKeeper.SetSupplys(ctx, expectedTotalSupply)
 
 	req := abci.RequestQuery{
 		Path: fmt.Sprintf("custom/%s/%s", types.ModuleName, types.QueryTotalSupply),
@@ -117,8 +138,8 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupplyOf() {
 	legacyAmino := app.LegacyAmino()
 	test1Supply := sdk.NewInt64Coin("test1", 4000000)
 	test2Supply := sdk.NewInt64Coin("test2", 700000000)
-	expectedTotalSupply := types.NewSupply(sdk.NewCoins(test1Supply, test2Supply))
-	app.BankKeeper.SetSupply(ctx, expectedTotalSupply)
+	expectedTotalSupply := types.NewSupplys(sdk.NewCoins(test1Supply, test2Supply))
+	app.BankKeeper.SetSupplys(ctx, expectedTotalSupply)
 
 	req := abci.RequestQuery{
 		Path: fmt.Sprintf("custom/%s/%s", types.ModuleName, types.QuerySupplyOf),
@@ -139,6 +160,13 @@ func (suite *IntegrationTestSuite) TestQuerier_QueryTotalSupplyOf() {
 	var resp sdk.Coin
 	suite.Require().NoError(legacyAmino.UnmarshalJSON(res, &resp))
 	suite.Require().Equal(test1Supply, resp)
+	req.Data = legacyAmino.MustMarshalJSON(types.NewQuerySupplyOfParams("test3"))
+	res, err = querier(ctx, []string{types.QuerySupplyOf}, req)
+	suite.Require().NoError(err)
+	suite.Require().NotNil(res)
+	suite.Require().NoError(legacyAmino.UnmarshalJSON(res, &resp))
+	suite.Require().Equal("test3", resp.Denom)
+	suite.Require().True(resp.Amount.IsZero())
 }
 
 func (suite *IntegrationTestSuite) TestQuerierRouteNotFound() {

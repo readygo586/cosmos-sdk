@@ -2,7 +2,6 @@ package exported
 
 import (
 	"github.com/gogo/protobuf/proto"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -13,10 +12,9 @@ type GenesisBalance interface {
 	GetCoins() sdk.Coins
 }
 
-// SupplyI defines an inflationary supply interface for modules that handle
-// token supply.
-type SupplyI interface {
-	proto.Message
+// SupplysI defines an inflationary supply interface for modules that handle
+// all token.
+type SupplysI interface {
 
 	GetTotal() sdk.Coins
 	SetTotal(total sdk.Coins)
@@ -24,6 +22,17 @@ type SupplyI interface {
 	Inflate(amount sdk.Coins)
 	Deflate(amount sdk.Coins)
 
+	String() string
+	ValidateBasic() error
+}
+// SupplyI defines an inflationary supply interface for modules that handle
+// token supply.
+type SupplyI interface {
+	proto.Message
+	GetTotal() sdk.Coin
+	SetTotal(total sdk.Coin)
+	Inflate(amount sdk.Coin)
+	Deflate(amount sdk.Coin)
 	String() string
 	ValidateBasic() error
 }

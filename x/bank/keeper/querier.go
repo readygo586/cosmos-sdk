@@ -84,7 +84,7 @@ func queryTotalSupply(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQu
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	totalSupply := k.GetSupply(ctx).GetTotal()
+	totalSupply := k.GetSupplys(ctx).GetTotal()
 
 	start, end := client.Paginate(len(totalSupply), params.Page, params.Limit, 100)
 	if start < 0 || end < 0 {
@@ -109,8 +109,7 @@ func querySupplyOf(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQueri
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	amount := k.GetSupply(ctx).GetTotal().AmountOf(params.Denom)
-	supply := sdk.NewCoin(params.Denom, amount)
+	supply := k.GetSupply(ctx, params.Denom).GetTotal()
 
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, supply)
 	if err != nil {

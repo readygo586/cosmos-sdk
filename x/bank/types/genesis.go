@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/x/bank/exported"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,7 +44,7 @@ func (gs GenesisState) Validate() error {
 	}
 
 	// NOTE: this errors if supply for any given coin is zero
-	return NewSupply(gs.Supply).ValidateBasic()
+	return NewSupplys(gs.Supply).ValidateBasic()
 }
 
 // NewGenesisState creates a new genesis state.
@@ -58,7 +59,7 @@ func NewGenesisState(params Params, balances []Balance, supply sdk.Coins, denomM
 
 // DefaultGenesisState returns a default bank module genesis state.
 func DefaultGenesisState() *GenesisState {
-	return NewGenesisState(DefaultParams(), []Balance{}, DefaultSupply().GetTotal(), []Metadata{})
+	return NewGenesisState(DefaultParams(), []Balance{}, DefaultSupplys().GetTotal(), DefaultMetadatas())
 }
 
 // GetGenesisStateFromAppState returns x/bank GenesisState given raw application
@@ -71,4 +72,20 @@ func GetGenesisStateFromAppState(cdc codec.JSONMarshaler, appState map[string]js
 	}
 
 	return &genesisState
+}
+
+// GenesisBalancesIterator implements genesis account iteration.
+type GenesisBalancesIterator struct{}
+
+// IterateGenesisBalances iterates over all the genesis balances found in
+// appGenesis and invokes a callback on each genesis account. If any call
+// returns true, iteration stops.
+func (GenesisBalancesIterator) IterateGenesisBalances(
+	cdc codec.JSONMarshaler, appState map[string]json.RawMessage, cb func(exported.GenesisBalance) (stop bool),
+) {
+	for _, balance := range GetGenesisStateFromAppState(cdc, appState).Balances {
+		if cb(balance) {
+			break
+		}
+	}
 }
