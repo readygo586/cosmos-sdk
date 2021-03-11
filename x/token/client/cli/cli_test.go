@@ -1,4 +1,4 @@
-//+build norace
+
 package cli_test
 
 import (

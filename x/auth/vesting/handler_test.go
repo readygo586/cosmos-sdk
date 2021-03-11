@@ -1,6 +1,7 @@
 package vesting_test
 
 import (
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -38,6 +39,10 @@ func (suite *HandlerTestSuite) TestMsgCreateVestingAccount() {
 	acc1 := suite.app.AccountKeeper.NewAccountWithAddress(ctx, addr1)
 	suite.app.AccountKeeper.SetAccount(ctx, acc1)
 	suite.Require().NoError(suite.app.BankKeeper.SetBalances(ctx, addr1, balances))
+	suite.app.BankKeeper.SetDenomMetaData(ctx, banktypes.Metadata{
+		Base:        "test",
+		SendEnabled: true,
+	})
 
 	testCases := []struct {
 		name      string

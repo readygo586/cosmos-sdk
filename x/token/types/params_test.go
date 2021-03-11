@@ -20,7 +20,7 @@ func TestParamsEqual(t *testing.T) {
 }
 
 func TestParamsString(t *testing.T) {
-	expectedStr := "Params:TokenCacheSize:32\tNewTokenFee:100000000000000000000\t"
+	expectedStr := "Params:TokenCacheSize:32\tNewTokenFee:100000000\t"
 	p := DefaultParams()
 
 	require.Equal(t, expectedStr, p.String())

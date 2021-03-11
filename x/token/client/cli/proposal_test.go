@@ -1,4 +1,4 @@
-//+build norace
+
 package cli_test
 
 import (
@@ -15,7 +15,7 @@ import (
 )
 
 func (s *IntegrationTestSuite) TestParseDisableTokenProposal() {
-	okJSON, cleanup := testutil.WriteToNewTempFile(s.T(), `
+	okJSON := testutil.WriteToNewTempFile(s.T(), `
 {
   "title": "Disable a token",
   "description": "disable a token!",
@@ -28,7 +28,6 @@ func (s *IntegrationTestSuite) TestParseDisableTokenProposal() {
    ]
 }
 `)
-	defer cleanup()
 
 	proposal, err := cli.ParseDisableTokenProposalJSON(s.cfg.LegacyAmino, okJSON.Name())
 	s.Require().NoError(err)
@@ -39,7 +38,7 @@ func (s *IntegrationTestSuite) TestParseDisableTokenProposal() {
 }
 
 func (s *IntegrationTestSuite) TestParseTokenParamsChangeProposal() {
-	okJSON, cleanup := testutil.WriteToNewTempFile(s.T(), `
+	okJSON := testutil.WriteToNewTempFile(s.T(), `
 {
   "title": "Token Parameters Change",
   "description": "token parameter change proposal",
@@ -58,7 +57,6 @@ func (s *IntegrationTestSuite) TestParseTokenParamsChangeProposal() {
   ]
 }
 `)
-	defer cleanup()
 
 	proposal, err := cli.ParseTokenParamsChangeProposalJSON(s.cfg.LegacyAmino, okJSON.Name())
 	s.Require().NoError(err)

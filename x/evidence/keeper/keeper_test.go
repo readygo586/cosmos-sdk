@@ -130,7 +130,7 @@ func (suite *KeeperTestSuite) populateValidators(ctx sdk.Context) {
 	// add accounts and set total supply
 	totalSupplyAmt := initAmt.MulRaw(int64(len(valAddresses)))
 	totalSupply := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, totalSupplyAmt))
-	suite.app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
+	suite.app.BankKeeper.SetSupplys(ctx, banktypes.NewSupplys(totalSupply))
 
 	for _, addr := range valAddresses {
 		err := suite.app.BankKeeper.AddCoins(ctx, sdk.AccAddress(addr), initCoins)

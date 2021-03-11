@@ -28,3 +28,18 @@ func (k Keeper) DistributeFromFeePool(ctx sdk.Context, amount sdk.Coins, receive
 	k.SetFeePool(ctx, feePool)
 	return nil
 }
+//AddCoinsFromAccountToFeePool updates communityPool and distribution's module account
+func (k Keeper) AddCoinsFromAccountToFeePool(ctx sdk.Context, senderAddr sdk.AccAddress, amount sdk.Coins) error {
+	feePool := k.GetFeePool(ctx)
+	// NOTE the community pool isn't a module account, however its coins
+	// are held in the distribution module account. Thus the community pool
+	// must be reduced separately from the SendCoinsFromModuleToAccount call
+	newPool := feePool.CommunityPool.Add(sdk.NewDecCoinsFromCoins(amount...)...)
+	feePool.CommunityPool = newPool
+	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, types.ModuleName, amount)
+	if err != nil {
+		return err
+	}
+	k.SetFeePool(ctx, feePool)
+	return nil
+}

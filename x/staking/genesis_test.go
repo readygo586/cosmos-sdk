@@ -31,7 +31,7 @@ func bootstrapGenesisTest(t *testing.T, power int64, numAddrs int) (*simapp.SimA
 	require.NoError(t, err)
 
 	app.AccountKeeper.SetModuleAccount(ctx, notBondedPool)
-	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
+	app.BankKeeper.SetSupplys(ctx, banktypes.NewSupplys(totalSupply))
 
 	return app, ctx, addrDels
 }

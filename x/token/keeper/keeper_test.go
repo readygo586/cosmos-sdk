@@ -65,7 +65,7 @@ func (suite *IntegrationTestSuite) TestGetSetSybmol() {
 	suite.Require().Equal(sdk.DefaultDenom, symbols[0])
 
 	meta := app.TokenKeeper.GetTokenInfo(ctx, sdk.DefaultDenom)
-	suite.Require().Equal(banktypes.DefaultMetadata()[0], meta)
+	suite.Require().Equal(banktypes.DefaultMetadatas()[0], meta)
 	suite.Require().Equal("", app.TokenKeeper.GetIssuer(ctx, sdk.DefaultDenom))
 	suite.Require().EqualValues(18, app.TokenKeeper.GetDecimals(ctx, sdk.DefaultDenom))
 	suite.Require().Equal(true, app.TokenKeeper.SendEnabled(ctx, sdk.DefaultDenom))
@@ -101,11 +101,11 @@ func (suite *IntegrationTestSuite) TestGetAllTokenInfos() {
 	suite.Require().Equal(sdk.DefaultDenom, symbols[0])
 
 	meta := app.TokenKeeper.GetTokenInfo(ctx, sdk.DefaultDenom)
-	suite.Require().Equal(banktypes.DefaultMetadata()[0], meta)
+	suite.Require().Equal(banktypes.DefaultMetadatas()[0], meta)
 
 	metas := app.TokenKeeper.GetAllTokenInfo(ctx)
 	suite.Require().EqualValues(1, len(metas))
-	suite.Require().Equal(banktypes.DefaultMetadata()[0], metas[0])
+	suite.Require().Equal(banktypes.DefaultMetadatas()[0], metas[0])
 
 	app.TokenKeeper.SetTokenInfo(ctx, btcmeta)
 

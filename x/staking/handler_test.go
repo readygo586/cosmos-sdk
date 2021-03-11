@@ -40,7 +40,7 @@ func bootstrapHandlerGenesisTest(t *testing.T, power int64, numAddrs int, accAmo
 	require.NoError(t, err)
 
 	app.AccountKeeper.SetModuleAccount(ctx, notBondedPool)
-	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(totalSupply))
+	app.BankKeeper.SetSupplys(ctx, banktypes.NewSupplys(totalSupply))
 
 	return app, ctx, addrDels, addrVals
 }

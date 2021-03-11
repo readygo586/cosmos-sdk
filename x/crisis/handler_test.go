@@ -40,7 +40,7 @@ func createTestApp() (*simapp.SimApp, sdk.Context, []sdk.AccAddress) {
 	feePool := distrtypes.InitialFeePool()
 	feePool.CommunityPool = sdk.NewDecCoinsFromCoins(sdk.NewCoins(constantFee)...)
 	app.DistrKeeper.SetFeePool(ctx, feePool)
-	app.BankKeeper.SetSupply(ctx, banktypes.NewSupply(sdk.Coins{}))
+	app.BankKeeper.SetSupplys(ctx, banktypes.NewSupplys(sdk.Coins{}))
 
 	addrs := simapp.AddTestAddrs(app, ctx, 1, sdk.NewInt(10000))
 

@@ -16,7 +16,7 @@ func (suite *IntegrationTestSuite) TestQuerySybmol() {
 	res, err := queryClient.Symbol(gocontext.Background(), &types.QuerySymbolRequest{Denom: sdk.DefaultDenom})
 	suite.Require().NoError(err)
 	meta := res.Info
-	suite.Equal(banktypes.DefaultMetadata()[0], meta)
+	suite.Equal(banktypes.DefaultMetadatas()[0], meta)
 
 	meta.Issuer = "me"
 	meta.Description = "test"

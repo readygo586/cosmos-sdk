@@ -30,7 +30,7 @@ func (suite *IntegrationTestSuite) TestQuerier_QuerySymbol() {
 
 	var meta banktypes.Metadata
 	suite.Require().NoError(legacyAmino.UnmarshalJSON(res, &meta))
-	suite.Require().Equal(banktypes.DefaultMetadata()[0], meta)
+	suite.Require().Equal(banktypes.DefaultMetadatas()[0], meta)
 
 	app.TokenKeeper.SetTokenInfo(ctx, btcmeta)
 

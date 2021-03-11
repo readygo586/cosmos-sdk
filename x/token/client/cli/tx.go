@@ -39,7 +39,7 @@ func NewNewTokenTxCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			clientCtx, err := client.ReadTxCommandFlags(clientCtx, cmd.Flags())
+			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
@@ -54,7 +54,7 @@ func NewNewTokenTxCmd() *cobra.Command {
 				return fmt.Errorf("invalid decimals:%v", args[1])
 			}
 
-			coin, err := sdk.ParseCoin(args[2])
+			coin, err := sdk.ParseCoinNormalized(args[2])
 			if err != nil {
 				return err
 			}
@@ -82,7 +82,7 @@ func NewInflateTokenTxCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			clientCtx, err := client.ReadTxCommandFlags(clientCtx, cmd.Flags())
+			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
@@ -92,7 +92,7 @@ func NewInflateTokenTxCmd() *cobra.Command {
 				return err
 			}
 
-			coin, err := sdk.ParseCoin(args[1])
+			coin, err := sdk.ParseCoinNormalized(args[1])
 			if err != nil {
 				return err
 			}
@@ -120,12 +120,12 @@ func NewBurnTokenTxCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			clientCtx, err := client.ReadTxCommandFlags(clientCtx, cmd.Flags())
+			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			coin, err := sdk.ParseCoin(args[0])
+			coin, err := sdk.ParseCoinNormalized(args[0])
 			if err != nil {
 				return err
 			}
