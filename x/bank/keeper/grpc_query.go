@@ -97,9 +97,9 @@ func (k BaseKeeper) SupplyOf(c context.Context, req *types.QuerySupplyOfRequest)
 	}
 
 	ctx := sdk.UnwrapSDKContext(c)
-	supply := k.GetSupplys(ctx).GetTotal().AmountOf(req.Denom)
+	supply := k.GetSupply(ctx, req.Denom).GetTotal()
 
-	return &types.QuerySupplyOfResponse{Amount: sdk.NewCoin(req.Denom, supply)}, nil
+	return &types.QuerySupplyOfResponse{Amount: supply}, nil
 }
 
 // Params implements the gRPC service handler for querying x/bank parameters.

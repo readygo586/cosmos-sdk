@@ -97,6 +97,11 @@ func TestSendNotEnoughBalance(t *testing.T) {
 
 	err := app.BankKeeper.SetBalances(ctx, addr1, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 67)))
 	require.NoError(t, err)
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Base:        "foocoin",
+		Decimals:    18,
+		SendEnabled: true,
+	})
 
 	app.Commit()
 
@@ -172,6 +177,11 @@ func TestSendToModuleAcc(t *testing.T) {
 			err = app.BankKeeper.SetBalances(ctx, fromAddr, test.fromBalance)
 			require.NoError(t, err)
 
+			app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+				Base:        "foocoin",
+				Decimals:    18,
+				SendEnabled: true,
+			})
 			app.Commit()
 
 			res1 := app.AccountKeeper.GetAccount(ctx, fromAddr)
@@ -214,6 +224,11 @@ func TestMsgMultiSendWithAccounts(t *testing.T) {
 	err := app.BankKeeper.SetBalances(ctx, addr1, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 67)))
 	require.NoError(t, err)
 
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Base:        "foocoin",
+		Decimals:    18,
+		SendEnabled: true,
+	})
 	app.Commit()
 
 	res1 := app.AccountKeeper.GetAccount(ctx, addr1)
@@ -288,6 +303,11 @@ func TestMsgMultiSendMultipleOut(t *testing.T) {
 	err = app.BankKeeper.SetBalances(ctx, addr2, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 42)))
 	require.NoError(t, err)
 
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Base:        "foocoin",
+		Decimals:    18,
+		SendEnabled: true,
+	})
 	app.Commit()
 
 	testCases := []appTestCase{
@@ -342,6 +362,11 @@ func TestMsgMultiSendMultipleInOut(t *testing.T) {
 	err = app.BankKeeper.SetBalances(ctx, addr4, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 42)))
 	require.NoError(t, err)
 
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Base:        "foocoin",
+		Decimals:    18,
+		SendEnabled: true,
+	})
 	app.Commit()
 
 	testCases := []appTestCase{
@@ -386,6 +411,11 @@ func TestMsgMultiSendDependent(t *testing.T) {
 	err = app.BankKeeper.SetBalances(ctx, addr1, sdk.NewCoins(sdk.NewInt64Coin("foocoin", 42)))
 	require.NoError(t, err)
 
+	app.BankKeeper.SetDenomMetaData(ctx, types.Metadata{
+		Base:        "foocoin",
+		Decimals:    18,
+		SendEnabled: true,
+	})
 	app.Commit()
 
 	testCases := []appTestCase{

@@ -158,6 +158,8 @@ func initGenFiles(cfg Config, genAccounts []authtypes.GenesisAccount, genBalance
 	cfg.Codec.MustUnmarshalJSON(cfg.GenesisState[banktypes.ModuleName], &bankGenState)
 
 	bankGenState.Balances = genBalances
+	denomMeta := initDenonMetaDatas(genBalances)
+	bankGenState.DenomMetadata = denomMeta
 	cfg.GenesisState[banktypes.ModuleName] = cfg.Codec.MustMarshalJSON(&bankGenState)
 
 	appGenStateJSON, err := json.MarshalIndent(cfg.GenesisState, "", "  ")
@@ -196,4 +198,26 @@ func writeFile(name string, dir string, contents []byte) error {
 	}
 
 	return nil
+}
+//Keep, for IntegrationTest only, set token's meta info
+func initDenonMetaDatas(genBalances []banktypes.Balance) []banktypes.Metadata {
+	genDenomMap := make(map[string]struct{})
+	var meta []banktypes.Metadata
+	for _, acc := range genBalances {
+		for _, coin := range acc.Coins {
+			if _, ok := genDenomMap[coin.Denom]; !ok {
+				genDenomMap[coin.Denom] = struct{}{}
+			}
+		}
+	}
+	for denom := range genDenomMap {
+		meta = append(meta, banktypes.Metadata{
+			Description: denom,
+			Display:     denom,
+			Base:        denom,
+			Decimals:    18,
+			SendEnabled: true,
+		})
+	}
+	return meta
 }

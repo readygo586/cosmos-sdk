@@ -32,57 +32,13 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
 
 	cfg := network.DefaultConfig()
-	genesisState := cfg.GenesisState
 	cfg.NumValidators = 1
 
-	var bankGenesis types.GenesisState
-	s.Require().NoError(cfg.Codec.UnmarshalJSON(genesisState[types.ModuleName], &bankGenesis))
-
-	bankGenesis.DenomMetadata = []types.Metadata{
-		{
-			Description: "The native staking token of the Cosmos Hub.",
-			DenomUnits: []*types.DenomUnit{
-				{
-					Denom:    "uatom",
-					Exponent: 0,
-					Aliases:  []string{"microatom"},
-				},
-				{
-					Denom:    "atom",
-					Exponent: 6,
-					Aliases:  []string{"ATOM"},
-				},
-			},
-			Base:    "uatom",
-			Display: "atom",
-		},
-		{
-			Description: "Ethereum mainnet token",
-			DenomUnits: []*types.DenomUnit{
-				{
-					Denom:    "wei",
-					Exponent: 0,
-				},
-				{
-					Denom:    "eth",
-					Exponent: 6,
-					Aliases:  []string{"ETH"},
-				},
-			},
-			Base:    "wei",
-			Display: "eth",
-		},
-	}
-
-	bankGenesisBz, err := cfg.Codec.MarshalJSON(&bankGenesis)
-	s.Require().NoError(err)
-	genesisState[types.ModuleName] = bankGenesisBz
-	cfg.GenesisState = genesisState
 
 	s.cfg = cfg
 	s.network = network.New(s.T(), cfg)
 
-	_, err = s.network.WaitForHeight(1)
+	_, err := s.network.WaitForHeight(1)
 	s.Require().NoError(err)
 }
 
@@ -246,39 +202,22 @@ func (s *IntegrationTestSuite) TestGetCmdQueryDenomsMetadata() {
 			expected: &types.QueryDenomsMetadataResponse{
 				Metadatas: []types.Metadata{
 					{
-						Description: "The native staking token of the Cosmos Hub.",
-						DenomUnits: []*types.DenomUnit{
-							{
-								Denom:    "uatom",
-								Exponent: 0,
-								Aliases:  []string{"microatom"},
-							},
-							{
-								Denom:    "atom",
-								Exponent: 6,
-								Aliases:  []string{"ATOM"},
-							},
-						},
-						Base:    "uatom",
-						Display: "atom",
+						Description: fmt.Sprintf("%vtoken", val.Moniker),
+						DenomUnits:[]*types.DenomUnit{},
+						Base:    fmt.Sprintf("%vtoken", val.Moniker),
+						Display: fmt.Sprintf("%vtoken", val.Moniker),
+						Decimals: 18,
+						SendEnabled: true,
 					},
 					{
-						Description: "Ethereum mainnet token",
-						DenomUnits: []*types.DenomUnit{
-							{
-								Denom:    "wei",
-								Exponent: 0,
-								Aliases:  []string{},
-							},
-							{
-								Denom:    "eth",
-								Exponent: 6,
-								Aliases:  []string{"ETH"},
-							},
-						},
-						Base:    "wei",
-						Display: "eth",
+						Description: sdk.DefaultDenom,
+						DenomUnits:[]*types.DenomUnit{},
+						Base:    sdk.DefaultDenom,
+						Display: sdk.DefaultDenom,
+						Decimals: 18,
+						SendEnabled: true,
 					},
+
 				},
 				Pagination: &query.PageResponse{Total: 2},
 			},
@@ -287,27 +226,18 @@ func (s *IntegrationTestSuite) TestGetCmdQueryDenomsMetadata() {
 			name: "client metadata of a specific denomination",
 			args: []string{
 				fmt.Sprintf("--%s=1", flags.FlagHeight),
-				fmt.Sprintf("--%s=%s", cli.FlagDenom, "uatom"),
+				fmt.Sprintf("--%s=%s", cli.FlagDenom, fmt.Sprintf("%vtoken", val.Moniker)),
 				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 			},
 			respType: &types.QueryDenomMetadataResponse{},
 			expected: &types.QueryDenomMetadataResponse{
 				Metadata: types.Metadata{
-					Description: "The native staking token of the Cosmos Hub.",
-					DenomUnits: []*types.DenomUnit{
-						{
-							Denom:    "uatom",
-							Exponent: 0,
-							Aliases:  []string{"microatom"},
-						},
-						{
-							Denom:    "atom",
-							Exponent: 6,
-							Aliases:  []string{"ATOM"},
-						},
-					},
-					Base:    "uatom",
-					Display: "atom",
+					Description: fmt.Sprintf("%vtoken", val.Moniker),
+					DenomUnits:[]*types.DenomUnit{},
+					Base:    fmt.Sprintf("%vtoken", val.Moniker),
+					Display: fmt.Sprintf("%vtoken", val.Moniker),
+					Decimals: 18,
+					SendEnabled: true,
 				},
 			},
 		},

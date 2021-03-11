@@ -1,4 +1,4 @@
-// +build norace
+
 
 package rest_test
 

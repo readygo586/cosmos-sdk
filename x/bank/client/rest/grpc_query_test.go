@@ -1,4 +1,4 @@
-// +build norace
+
 
 package rest_test
 
@@ -121,29 +121,28 @@ func (s *IntegrationTestSuite) TestDenomMetadataGRPCHandler() {
 			&types.QueryDenomsMetadataResponse{
 				Metadatas: []types.Metadata{
 					{
-						Description: "The native staking token of the Cosmos Hub.",
-						DenomUnits: []*types.DenomUnit{
-							{
-								Denom:    "uatom",
-								Exponent: 0,
-								Aliases:  []string{"microatom"},
-							},
-							{
-								Denom:    "atom",
-								Exponent: 6,
-								Aliases:  []string{"ATOM"},
-							},
-						},
-						Base:    "uatom",
-						Display: "atom",
+						Description: fmt.Sprintf("%vtoken", val.Moniker),
+						DenomUnits:[]*types.DenomUnit{},
+						Base:    fmt.Sprintf("%vtoken", val.Moniker),
+						Display: fmt.Sprintf("%vtoken", val.Moniker),
+						Decimals: 18,
+						SendEnabled: true,
+					},
+					{
+						Description: sdk.DefaultDenom,
+						DenomUnits:[]*types.DenomUnit{},
+						Base:    sdk.DefaultDenom,
+						Display: sdk.DefaultDenom,
+						Decimals: 18,
+						SendEnabled: true,
 					},
 				},
-				Pagination: &query.PageResponse{Total: 1},
+				Pagination: &query.PageResponse{Total: 2},
 			},
 		},
 		{
 			"GRPC client metadata of a specific denom",
-			fmt.Sprintf("%s/cosmos/bank/v1beta1/denoms_metadata/uatom", baseURL),
+			fmt.Sprintf("%s/cosmos/bank/v1beta1/denoms_metadata/stake", baseURL),
 			map[string]string{
 				grpctypes.GRPCBlockHeightHeader: "1",
 			},
@@ -151,21 +150,12 @@ func (s *IntegrationTestSuite) TestDenomMetadataGRPCHandler() {
 			&types.QueryDenomMetadataResponse{},
 			&types.QueryDenomMetadataResponse{
 				Metadata: types.Metadata{
-					Description: "The native staking token of the Cosmos Hub.",
-					DenomUnits: []*types.DenomUnit{
-						{
-							Denom:    "uatom",
-							Exponent: 0,
-							Aliases:  []string{"microatom"},
-						},
-						{
-							Denom:    "atom",
-							Exponent: 6,
-							Aliases:  []string{"ATOM"},
-						},
-					},
-					Base:    "uatom",
-					Display: "atom",
+					Description: sdk.DefaultDenom,
+					DenomUnits:[]*types.DenomUnit{},
+					Base:    sdk.DefaultDenom,
+					Display: sdk.DefaultDenom,
+					Decimals: 18,
+					SendEnabled: true,
 				},
 			},
 		},
